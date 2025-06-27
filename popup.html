@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cursor Usage Tracker</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <h1 class="title">
+          <svg class="logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+          Cursor Usage
+        </h1>
+        <button id="refreshBtn" class="refresh-btn" title="Refresh Data">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="m3 17 3-3 3 3m0-6 3-3 3 3"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading usage data...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="error-state hidden">
+      <div class="error-icon">⚠️</div>
+      <p id="errorMessage">Failed to load data</p>
+      <button id="retryBtn" class="retry-btn">Try Again</button>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="main-content hidden">
+      <!-- Filters Section -->
+      <section class="filters-section">
+        <h2 class="section-title">Time Filters</h2>
+        <div class="filter-tabs">
+          <button class="filter-tab active" data-filter="all">All Time</button>
+          <button class="filter-tab" data-filter="today">Today</button>
+          <button class="filter-tab" data-filter="yesterday">Yesterday</button>
+          <button class="filter-tab" data-filter="last4hours">Last 4 Hours</button>
+          <button class="filter-tab" data-filter="last24hours">Last 24 Hours</button>
+          <button class="filter-tab" data-filter="last7days">Last 7 Days</button>
+        </div>
+        
+        <!-- Custom Date Range -->
+        <div class="custom-range">
+          <label class="date-label">
+            From:
+            <input type="datetime-local" id="dateFrom" class="date-input">
+          </label>
+          <label class="date-label">
+            To:
+            <input type="datetime-local" id="dateTo" class="date-input">
+          </label>
+          <button id="applyCustomRange" class="apply-btn">Apply</button>
+        </div>
+      </section>
+
+      <!-- Stats Cards -->
+      <section class="stats-section">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon cost-icon">💰</div>
+            <div class="stat-content">
+              <div class="stat-value" id="totalCost">$0.00</div>
+              <div class="stat-label">Total Cost</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon tokens-icon">📝</div>
+            <div class="stat-content">
+              <div class="stat-value" id="totalInputTokens">0</div>
+              <div class="stat-label">Input Tokens</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon cache-icon">🔄</div>
+            <div class="stat-content">
+              <div class="stat-value" id="totalCacheReadTokens">0</div>
+              <div class="stat-label">Cache Read Tokens</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon requests-icon">📊</div>
+            <div class="stat-content">
+              <div class="stat-value" id="totalRequests">0</div>
+              <div class="stat-label">Total Requests</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Usage Details -->
+      <section class="details-section">
+        <div class="section-header">
+          <h2 class="section-title">Usage Details</h2>
+          <div class="results-count">
+            <span id="resultsCount">0 events</span>
+          </div>
+        </div>
+        
+        <div class="usage-list" id="usageList">
+          <!-- Usage events will be dynamically populated -->
+        </div>
+      </section>
+
+      <!-- Summary Section -->
+      <section class="summary-section">
+        <h2 class="section-title">Model Breakdown</h2>
+        <div class="model-breakdown" id="modelBreakdown">
+          <!-- Model usage breakdown will be dynamically populated -->
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html> 

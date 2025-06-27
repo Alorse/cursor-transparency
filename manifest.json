@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Cursor Usage Tracker",
+  "version": "1.0.0",
+  "description": "Track and analyze your Cursor.com usage with advanced filtering and totals",
+  "permissions": ["activeTab", "storage", "scripting", "tabs"],
+  "host_permissions": ["https://www.cursor.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.cursor.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_title": "Cursor Usage Tracker"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

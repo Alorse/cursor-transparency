@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cursor Usage Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="header-content">
+        <div class="header-left">
+          <svg class="logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+          <h1 class="dashboard-title">Cursor Usage Dashboard</h1>
+        </div>
+        <div class="header-actions">
+          <div class="connection-status" id="connectionStatus">
+            <div class="status-indicator" id="statusIndicator"></div>
+            <span id="statusText">Checking connection...</span>
+          </div>
+          <button id="refreshBtn" class="refresh-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="m3 12 2-2m0 0 7-7 7 7M13 5v6h6m-9 1a3 3 0 1 0 6 0"></path>
+            </svg>
+            Refresh Data
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-state">
+      <div class="spinner"></div>
+      <h2>Loading Usage Data...</h2>
+      <p>Fetching your Cursor usage statistics from the API</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="error-state hidden">
+      <div class="error-content">
+        <div class="error-icon">⚠️</div>
+        <h2>Unable to Load Data</h2>
+        <p id="errorMessage">Failed to load usage data</p>
+        <div class="error-instructions">
+          <h3>To use this dashboard:</h3>
+          <ol>
+            <li>Open <a href="https://www.cursor.com" target="_blank">cursor.com</a> in a new tab</li>
+            <li>Make sure you're logged into your Cursor account</li>
+            <li>Return to this tab and click "Try Again"</li>
+          </ol>
+        </div>
+        <div class="error-actions">
+          <button id="retryBtn" class="retry-btn">Try Again</button>
+          <button id="openCursorBtn" class="open-cursor-btn">Open Cursor.com</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="mainContent" class="main-dashboard hidden">
+      <!-- Filters Section -->
+      <section class="filters-section">
+        <div class="section-header">
+          <h2 class="section-title">Time Range Filters</h2>
+          <div class="last-updated">
+            <span id="lastUpdated">Last updated: Never</span>
+          </div>
+        </div>
+        
+        <div class="filters-container">
+          <div class="quick-filters">
+            <button class="filter-btn active" data-filter="all">All Time</button>
+            <button class="filter-btn" data-filter="today">Today</button>
+            <button class="filter-btn" data-filter="yesterday">Yesterday</button>
+            <button class="filter-btn" data-filter="last4hours">Last 4 Hours</button>
+            <button class="filter-btn" data-filter="last24hours">Last 24 Hours</button>
+            <button class="filter-btn" data-filter="last7days">Last 7 Days</button>
+          </div>
+          
+          <div class="custom-range">
+            <div class="date-inputs">
+              <label class="date-label">
+                From:
+                <input type="datetime-local" id="dateFrom" class="date-input">
+              </label>
+              <label class="date-label">
+                To:
+                <input type="datetime-local" id="dateTo" class="date-input">
+              </label>
+            </div>
+            <button id="applyCustomRange" class="apply-btn">Apply Custom Range</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Stats Overview -->
+      <section class="stats-section">
+        <div class="section-header">
+          <h2 class="section-title">Usage Overview</h2>
+          <div class="results-summary">
+            <span id="resultsCount">0 events</span> • 
+            <span id="timeRange">All time</span>
+          </div>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card cost-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-content">
+              <div class="stat-value" id="totalCost">$0.00</div>
+              <div class="stat-label">Total Cost</div>
+              <div class="stat-change" id="costChange"></div>
+            </div>
+          </div>
+          
+          <div class="stat-card tokens-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-content">
+              <div class="stat-value" id="totalInputTokens">0</div>
+              <div class="stat-label">Input Tokens</div>
+              <div class="stat-sublabel" id="inputTokensDetail"></div>
+            </div>
+          </div>
+          
+          <div class="stat-card cache-card">
+            <div class="stat-icon">🔄</div>
+            <div class="stat-content">
+              <div class="stat-value" id="totalCacheReadTokens">0</div>
+              <div class="stat-label">Cache Read Tokens</div>
+              <div class="stat-sublabel" id="cacheTokensDetail"></div>
+            </div>
+          </div>
+          
+          <div class="stat-card requests-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+              <div class="stat-value" id="totalRequests">0</div>
+              <div class="stat-label">Total Requests</div>
+              <div class="stat-sublabel" id="requestsDetail"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dashboard Grid -->
+      <div class="dashboard-grid">
+        <!-- Usage Timeline -->
+        <section class="timeline-section">
+          <div class="section-header">
+            <h2 class="section-title">Recent Usage Events</h2>
+            <div class="timeline-controls">
+              <select id="sortOrder" class="sort-select">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="cost-high">Highest Cost</option>
+                <option value="cost-low">Lowest Cost</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="timeline-container">
+            <div class="usage-timeline" id="usageTimeline">
+              <!-- Timeline events will be populated here -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Model Breakdown -->
+        <section class="models-section">
+          <div class="section-header">
+            <h2 class="section-title">Model Usage Breakdown</h2>
+            <div class="breakdown-toggle">
+              <button class="toggle-btn active" data-view="cost">By Cost</button>
+              <button class="toggle-btn" data-view="requests">By Requests</button>
+            </div>
+          </div>
+          
+          <div class="models-container">
+            <div class="model-breakdown" id="modelBreakdown">
+              <!-- Model breakdown will be populated here -->
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Detailed Analytics -->
+      <section class="analytics-section">
+        <div class="section-header">
+          <h2 class="section-title">Detailed Analytics</h2>
+          <div class="export-actions">
+            <button id="exportCsv" class="export-btn">Export CSV</button>
+            <button id="exportJson" class="export-btn">Export JSON</button>
+          </div>
+        </div>
+        
+        <div class="analytics-table-container">
+          <table class="analytics-table" id="analyticsTable">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Model</th>
+                <th>Cost</th>
+                <th>Input Tokens</th>
+                <th>Output Tokens</th>
+                <th>Cache Read</th>
+                <th>Cache Write</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Table rows will be populated here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html> 
