@@ -39,7 +39,7 @@ async function fetchUsageData() {
         
         // Use the correct POST request with JSON body like the website does
         const now = new Date();
-        const currentMonth = now.getMonth(); // getMonth() returns 0-11, so add 1
+        const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
         
         console.log('Fetching for month:', currentMonth, 'year:', currentYear);
@@ -47,7 +47,7 @@ async function fetchUsageData() {
         const requestBody = {
           month: currentMonth,
           year: currentYear,
-          includeUsageEvents: true
+          includeUsageEvents: true,
         };
         
         console.log('Request body:', requestBody);
