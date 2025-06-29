@@ -75,6 +75,10 @@ async function initialize() {
   });
   
   await checkConnectionStatus();
+  
+  // Add a small delay on initial load to ensure extension is fully ready
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
   await fetchAndDisplayData();
 }
 
@@ -83,17 +87,23 @@ async function initialize() {
  */
 function setupEventListeners() {
   // Action buttons
-  elements.refreshBtn.addEventListener('click', async () => {
-    await fetchAndDisplayData(true);
-  });
+  if (elements.refreshBtn) {
+    elements.refreshBtn.addEventListener('click', async () => {
+      await fetchAndDisplayData(true);
+    });
+  }
   
-  elements.retryBtn.addEventListener('click', async () => {
-    await fetchAndDisplayData();
-  });
+  if (elements.retryBtn) {
+    elements.retryBtn.addEventListener('click', async () => {
+      await fetchAndDisplayData();
+    });
+  }
   
-  elements.openCursorBtn.addEventListener('click', () => {
-    window.open('https://www.cursor.com', '_blank');
-  });
+  if (elements.openCursorBtn) {
+    elements.openCursorBtn.addEventListener('click', () => {
+      window.open('https://www.cursor.com', '_blank');
+    });
+  }
   
   // Filter buttons
   elements.filterBtns.forEach(btn => {
@@ -110,59 +120,69 @@ function setupEventListeners() {
     });
   });
   
-  // Custom date range
-  elements.applyCustomRange.addEventListener('click', () => {
-    const fromDate = elements.dateFrom.value;
-    const toDate = elements.dateTo.value;
-    
-    if (fromDate && toDate) {
-      customDateRange = {
-        from: new Date(fromDate).getTime(),
-        to: new Date(toDate).getTime()
-      };
+  // Custom date range (only if elements exist - they're in popup, not dashboard)
+  if (elements.applyCustomRange && elements.dateFrom && elements.dateTo) {
+    elements.applyCustomRange.addEventListener('click', () => {
+      const fromDate = elements.dateFrom.value;
+      const toDate = elements.dateTo.value;
       
-      elements.filterBtns.forEach(b => b.classList.remove('active'));
-      
-      if (allUsageData) {
-        displayData();
+      if (fromDate && toDate) {
+        customDateRange = {
+          from: new Date(fromDate).getTime(),
+          to: new Date(toDate).getTime()
+        };
+        
+        elements.filterBtns.forEach(b => b.classList.remove('active'));
+        
+        if (allUsageData) {
+          displayData();
+        }
       }
-    }
-  });
+    });
+  }
   
   // Sort order
-  elements.sortOrder.addEventListener('change', (e) => {
-    currentSort = e.target.value;
-    if (allUsageData) {
-      displayData();
-    }
-  });
-  
-  // Model breakdown toggle
-  elements.toggleBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      elements.toggleBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      
-      modelBreakdownView = btn.dataset.view;
-      
+  if (elements.sortOrder) {
+    elements.sortOrder.addEventListener('change', (e) => {
+      currentSort = e.target.value;
       if (allUsageData) {
         displayData();
       }
     });
-  });
+  }
+  
+  // Model breakdown toggle
+  if (elements.toggleBtns && elements.toggleBtns.length > 0) {
+    elements.toggleBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        elements.toggleBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        modelBreakdownView = btn.dataset.view;
+        
+        if (allUsageData) {
+          displayData();
+        }
+      });
+    });
+  }
   
   // Export buttons
-  elements.exportCsv.addEventListener('click', () => {
-    if (allUsageData) {
-      exportData('csv');
-    }
-  });
+  if (elements.exportCsv) {
+    elements.exportCsv.addEventListener('click', () => {
+      if (allUsageData) {
+        exportData('csv');
+      }
+    });
+  }
   
-  elements.exportJson.addEventListener('click', () => {
-    if (allUsageData) {
-      exportData('json');
-    }
-  });
+  if (elements.exportJson) {
+    elements.exportJson.addEventListener('click', () => {
+      if (allUsageData) {
+        exportData('json');
+      }
+    });
+  }
 }
 
 /**
@@ -186,12 +206,14 @@ async function checkConnectionStatus() {
  * Update connection status display
  */
 function updateConnectionStatus(connected, message) {
-  if (connected) {
-    elements.statusIndicator.className = 'status-indicator connected';
-    elements.statusText.textContent = message;
-  } else {
-    elements.statusIndicator.className = 'status-indicator disconnected';
-    elements.statusText.textContent = message;
+  if (elements.statusIndicator && elements.statusText) {
+    if (connected) {
+      elements.statusIndicator.className = 'status-indicator connected';
+      elements.statusText.textContent = message;
+    } else {
+      elements.statusIndicator.className = 'status-indicator disconnected';
+      elements.statusText.textContent = message;
+    }
   }
 }
 
@@ -211,11 +233,19 @@ async function fetchAndDisplayData(forceRefresh = false) {
       });
     }
     
-    const response = await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: 'fetchUsageData' }, resolve);
-    });
+    // Add timeout to prevent hanging on initial load
+    const response = await Promise.race([
+      new Promise((resolve) => {
+        chrome.runtime.sendMessage({ action: 'fetchUsageData' }, resolve);
+      }),
+      new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Request timed out. Please make sure you have cursor.com open in a tab and are logged in.'));
+        }, 10000); // 10 second timeout
+      })
+    ]);
     
-    if (response.success) {
+    if (response && response.success) {
       allUsageData = response.data;
       console.log('Loaded usage data:', allUsageData);
       console.log('Usage events count:', allUsageData?.usageEvents?.length || 0);
@@ -224,7 +254,7 @@ async function fetchAndDisplayData(forceRefresh = false) {
       updateLastUpdated();
       updateConnectionStatus(true, 'Data loaded successfully');
     } else {
-      throw new Error(response.error || 'Failed to fetch data');
+      throw new Error(response?.error || 'Failed to fetch data');
     }
   } catch (error) {
     console.error('Error fetching usage data:', error);

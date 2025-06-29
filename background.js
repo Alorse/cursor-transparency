@@ -31,58 +31,75 @@ async function fetchUsageData() {
     // Use the first cursor.com tab found
     const cursorTab = tabs[0];
     
-    // Execute fetch in the context of the cursor.com tab
-    const results = await chrome.scripting.executeScript({
-      target: { tabId: cursorTab.id },
-      func: async () => {
-        console.log('Fetching usage data from cursor.com...');
-        
-        // Use the correct POST request with JSON body like the website does
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-        
-        console.log('Fetching for month:', currentMonth, 'year:', currentYear);
-        
-        const requestBody = {
-          month: currentMonth,
-          year: currentYear,
-          includeUsageEvents: true,
-        };
-        
-        console.log('Request body:', requestBody);
-        
-        const response = await fetch('https://www.cursor.com/api/dashboard/get-monthly-invoice', {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'User-Agent': navigator.userAgent,
-            'Referer': 'https://www.cursor.com/dashboard?tab=usage',
-            'Origin': 'https://www.cursor.com',
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'same-origin'
-          },
-          body: JSON.stringify(requestBody)
-        });
-        
-        console.log('Response status:', response.status);
-        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+    // Check if the tab is ready before injecting script
+    try {
+      await chrome.tabs.get(cursorTab.id);
+    } catch (tabError) {
+      throw new Error('Cursor.com tab is not accessible. Please refresh the tab and try again.');
+    }
+    
+    // Execute fetch in the context of the cursor.com tab with timeout
+    const results = await Promise.race([
+      chrome.scripting.executeScript({
+        target: { tabId: cursorTab.id },
+        func: async () => {
+          console.log('Fetching usage data from cursor.com...');
+          
+          // Use the correct POST request with JSON body like the website does
+          const now = new Date();
+          const currentMonth = now.getMonth();
+          const currentYear = now.getFullYear();
+          
+          console.log('Fetching for month:', currentMonth, 'year:', currentYear);
+          
+          const requestBody = {
+            month: currentMonth,
+            year: currentYear,
+            includeUsageEvents: true,
+          };
+          
+          console.log('Request body:', requestBody);
+          
+          const response = await fetch('https://www.cursor.com/api/dashboard/get-monthly-invoice', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'User-Agent': navigator.userAgent,
+              'Referer': 'https://www.cursor.com/dashboard?tab=usage',
+              'Origin': 'https://www.cursor.com',
+              'sec-fetch-dest': 'empty',
+              'sec-fetch-mode': 'cors',
+              'sec-fetch-site': 'same-origin'
+            },
+            body: JSON.stringify(requestBody)
+          });
+          
+          console.log('Response status:', response.status);
+          console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+          
+          if (!response.ok) {
+            if (response.status === 401) {
+              throw new Error('Not logged in to Cursor. Please log in to cursor.com and try again.');
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          console.log('Raw API response:', data);
+          console.log('Has usageEvents:', !!data.usageEvents);
+          console.log('UsageEvents length:', data.usageEvents?.length || 0);
+          
+          return data;
         }
-        
-        const data = await response.json();
-        console.log('Raw API response:', data);
-        console.log('Has usageEvents:', !!data.usageEvents);
-        console.log('UsageEvents length:', data.usageEvents?.length || 0);
-        
-        return data;
-      }
-    });
+      }),
+      new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Script execution timed out. The cursor.com page may not be fully loaded.'));
+        }, 8000); // 8 second timeout for script execution
+      })
+    ]);
 
     const data = results[0]?.result;
     console.log('Background: Received data from script:', data);
