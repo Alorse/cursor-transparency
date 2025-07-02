@@ -484,7 +484,7 @@ function updateTimeline(events) {
     const isErrored = event?.status === 'errored';
     if (isErrored) modelIntent += ' [Errored, Not Charged]';
     return `
-      <div class="timeline-event" style="${isErrored ? 'background-color: rgb(96, 68, 68);' : ''}">
+      <div class="timeline-event${isErrored ? ' errored-bg' : ''}">
         <div class="event-header">
           <span class="event-model">${modelIntent}</span>
           <span class="event-time">${formatTimestamp(timestamp)}</span>
@@ -625,7 +625,7 @@ function updateAnalyticsTable(events) {
     const isErrored = event?.status === 'errored';
     if (isErrored) modelIntent += ' [Errored, Not Charged]';
     return `
-      <tr${isErrored ? ' style="background-color: rgb(94, 74, 74);"' : ''}>
+      <tr${isErrored ? ' class="errored-bg"' : ''}>
         <td>${timestamp.toLocaleString()}</td>
         <td>${modelIntent}</td>
         <td>$${(cost / 100).toFixed(3)}</td>

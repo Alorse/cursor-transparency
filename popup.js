@@ -291,7 +291,7 @@ function updateUsageList(events) {
     const isErrored = event?.status === 'errored';
     if (isErrored) modelIntent += ' [Errored, Not Charged]';
     return `
-      <div class="usage-item" style="${isErrored ? 'background-color:rgb(96, 68, 68);' : ''}">
+      <div class="usage-item${isErrored ? ' errored-bg' : ''}">
         <div class="usage-header">
           <span class="usage-model">${modelIntent}</span>
           <span class="usage-time">${formatTimestamp(timestamp)}</span>

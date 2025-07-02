@@ -438,4 +438,9 @@ section:last-child {
   .custom-range {
     grid-template-columns: 1fr;
   }
+}
+
+.errored-bg {
+  background-color: #3a1a1a !important;
+  color: #ffd6d6 !important;
 } 

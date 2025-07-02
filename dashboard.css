@@ -704,4 +704,9 @@ section {
   font-size: 3rem;
   margin-bottom: 1rem;
   opacity: 0.5;
+}
+
+.errored-bg {
+  background-color: #3a1a1a !important;
+  color: #ffd6d6 !important;
 } 
