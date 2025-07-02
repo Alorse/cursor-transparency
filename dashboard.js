@@ -297,7 +297,7 @@ function displayData() {
   }
   
   console.log('Total events:', allUsageData.usageEvents.length);
-  const filteredEvents = filterEvents(allUsageData.usageEvents);
+  const filteredEvents = filterEvents(allUsageData.usageEvents).filter(isValidEvent);
   console.log('Filtered events:', filteredEvents.length);
   console.log('Current filter:', currentFilter);
   
@@ -665,7 +665,7 @@ function updateResultsInfo(count) {
  * Export data in specified format
  */
 function exportData(format) {
-  const filteredEvents = filterEvents(allUsageData.usageEvents);
+  const filteredEvents = filterEvents(allUsageData.usageEvents).filter(isValidEvent);
   
   if (format === 'csv') {
     const csv = convertToCSV(filteredEvents);
@@ -779,6 +779,15 @@ function formatTimestamp(date) {
   } else {
     return date.toLocaleDateString();
   }
+}
+
+/**
+ * Determina si un evento es válido para mostrar
+ */
+function isValidEvent(event) {
+  const details = getModelDetails(event.details);
+  const isEmptyDetails = !details || Object.keys(details).length === 0;
+  return !(isEmptyDetails && (event.priceCents === 0));
 }
 
 // Initialize when DOM is loaded

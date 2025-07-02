@@ -160,7 +160,8 @@ function displayData() {
     return;
   }
   
-  const filteredEvents = filterEvents(allUsageData.usageEvents);
+  // Filter invalid events
+  const filteredEvents = filterEvents(allUsageData.usageEvents).filter(isValidEvent);
   const stats = calculateStats(filteredEvents);
   
   updateStatsDisplay(stats);
@@ -451,6 +452,17 @@ function formatTimestamp(date) {
   } else {
     return date.toLocaleDateString();
   }
+}
+
+/**
+ * Check if an event is valid
+ * @param {Object} event - The event object
+ * @returns {boolean} True if the event is valid, false otherwise
+ */
+function isValidEvent(event) {
+  const details = getModelDetails(event.details);
+  const isEmptyDetails = !details || Object.keys(details).length === 0;
+  return !(isEmptyDetails && (event.priceCents === 0));
 }
 
 // Initialize when DOM is loaded
