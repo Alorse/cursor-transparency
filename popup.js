@@ -36,6 +36,27 @@ const elements = {
 };
 
 /**
+ * Get model details from event details
+ * @param {Object} eventDetails - The event details object
+ * @returns {Object} The nested details object
+ */
+function getModelDetails(eventDetails) {
+  // Determine type from details object keys
+  const validTypes = ['toolCallComposer', 'composer', 'fastApply', 'chat', 'cmdK'];
+  let nestedDetails = {};
+  
+  // Find the type from the details object keys
+  for (const validType of validTypes) {
+    if (eventDetails[validType]) {
+      nestedDetails = eventDetails[validType];
+      break;
+    }
+  }
+
+  return nestedDetails;
+}
+
+/**
  * Initialize the popup
  */
 async function initialize() {
@@ -218,7 +239,8 @@ function calculateStats(events) {
     stats.totalCents += event.priceCents || 0;
     
     // Add token usage if available
-    const tokenUsage = event.details?.toolCallComposer?.tokenUsage;
+    const details = getModelDetails(event.details);
+    const tokenUsage = details?.tokenUsage;
     if (tokenUsage) {
       stats.totalInputTokens += tokenUsage.inputTokens || 0;
       stats.totalOutputTokens += tokenUsage.outputTokens || 0;
@@ -260,8 +282,9 @@ function updateUsageList(events) {
   const sortedEvents = [...events].sort((a, b) => parseInt(b.timestamp) - parseInt(a.timestamp));
   
   elements.usageList.innerHTML = sortedEvents.map(event => {
-    const tokenUsage = event.details?.toolCallComposer?.tokenUsage;
-    const modelIntent = event.details?.toolCallComposer?.modelIntent || 'Unknown Model';
+    const details = getModelDetails(event.details);
+    const tokenUsage = details?.tokenUsage;
+    const modelIntent = details?.modelIntent || 'Unknown Model';
     const timestamp = new Date(parseInt(event.timestamp));
     const cost = event.priceCents || 0;
     
@@ -298,8 +321,9 @@ function updateModelBreakdown(events) {
   const modelStats = {};
   
   events.forEach(event => {
-    const modelIntent = event.details?.toolCallComposer?.modelIntent || 'Unknown Model';
-    const tokenUsage = event.details?.toolCallComposer?.tokenUsage;
+    const details = getModelDetails(event.details);
+    const modelIntent = details?.modelIntent || 'Unknown Model';
+    const tokenUsage = details?.tokenUsage;
     const cost = event.priceCents || 0;
     
     if (!modelStats[modelIntent]) {
