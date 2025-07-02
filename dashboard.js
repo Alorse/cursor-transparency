@@ -478,12 +478,13 @@ function updateTimeline(events) {
   elements.usageTimeline.innerHTML = displayEvents.map(event => {
     const details = getModelDetails(event.details);
     const tokenUsage = details?.tokenUsage || {};
-    const modelIntent = details?.modelIntent || 'Unknown Model';
+    let modelIntent = details?.modelIntent || 'Unknown Model';
     const timestamp = new Date(parseInt(event.timestamp));
     const cost = event.priceCents || 0;
-    
+    const isErrored = event?.status === 'errored';
+    if (isErrored) modelIntent += ' [Errored, Not Charged]';
     return `
-      <div class="timeline-event">
+      <div class="timeline-event" style="${isErrored ? 'background-color: rgb(96, 68, 68);' : ''}">
         <div class="event-header">
           <span class="event-model">${modelIntent}</span>
           <span class="event-time">${formatTimestamp(timestamp)}</span>
@@ -618,12 +619,13 @@ function updateAnalyticsTable(events) {
   tbody.innerHTML = sortedEvents.map(event => {
     const details = getModelDetails(event.details);
     const tokenUsage = details?.tokenUsage;
-    const modelIntent = details?.modelIntent || 'Unknown';
+    let modelIntent = details?.modelIntent || 'Unknown';
     const timestamp = new Date(parseInt(event.timestamp));
     const cost = event.priceCents || 0;
-    
+    const isErrored = event?.status === 'errored';
+    if (isErrored) modelIntent += ' [Errored, Not Charged]';
     return `
-      <tr>
+      <tr${isErrored ? ' style="background-color: rgb(94, 74, 74);"' : ''}>
         <td>${timestamp.toLocaleString()}</td>
         <td>${modelIntent}</td>
         <td>$${(cost / 100).toFixed(3)}</td>

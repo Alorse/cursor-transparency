@@ -285,12 +285,13 @@ function updateUsageList(events) {
   elements.usageList.innerHTML = sortedEvents.map(event => {
     const details = getModelDetails(event.details);
     const tokenUsage = details?.tokenUsage;
-    const modelIntent = details?.modelIntent || 'Unknown Model';
+    let modelIntent = details?.modelIntent || 'Unknown Model';
     const timestamp = new Date(parseInt(event.timestamp));
     const cost = event.priceCents || 0;
-    
+    const isErrored = event?.status === 'errored';
+    if (isErrored) modelIntent += ' [Errored, Not Charged]';
     return `
-      <div class="usage-item">
+      <div class="usage-item" style="${isErrored ? 'background-color:rgb(96, 68, 68);' : ''}">
         <div class="usage-header">
           <span class="usage-model">${modelIntent}</span>
           <span class="usage-time">${formatTimestamp(timestamp)}</span>
