@@ -2,6 +2,12 @@
 
 A Chrome extension that provides detailed analytics and usage tracking for your Cursor.com account. Monitor your AI model usage, costs, and token consumption with advanced filtering options.
 
+## Screenshots
+
+![Dashboard Overview](./screenshots/screenshot1.png)
+
+![Detailed Analytics Table](./screenshots/screenshot2.png)
+
 ## Features
 
 🔍 **Detailed Usage Analytics**
