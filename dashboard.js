@@ -479,6 +479,7 @@ function updateTimeline(events) {
     const details = getModelDetails(event.details);
     const tokenUsage = details?.tokenUsage || {};
     let modelIntent = details?.modelIntent || 'Unknown Model';
+    if (modelIntent === 'default') modelIntent = 'Auto';
     const timestamp = new Date(parseInt(event.timestamp));
     const cost = event.priceCents || 0;
     const isErrored = event?.status === 'errored';
@@ -528,7 +529,8 @@ function updateModelBreakdown(events) {
   events.forEach(event => {
     const details = getModelDetails(event.details);
     const tokenUsage = details?.tokenUsage || {};
-    const modelIntent = details?.modelIntent || 'Unknown Model';
+    let modelIntent = details?.modelIntent || 'Unknown Model';
+    if (modelIntent === 'default') modelIntent = 'Auto';
     const cost = event.priceCents || 0;
     
     if (!modelStats[modelIntent]) {
@@ -620,6 +622,7 @@ function updateAnalyticsTable(events) {
     const details = getModelDetails(event.details);
     const tokenUsage = details?.tokenUsage;
     let modelIntent = details?.modelIntent || 'Unknown';
+    if (modelIntent === 'default') modelIntent = 'Auto';
     const timestamp = new Date(parseInt(event.timestamp));
     const cost = event.priceCents || 0;
     const isErrored = event?.status === 'errored';
@@ -686,7 +689,8 @@ function convertToCSV(events) {
   const rows = events.map(event => {
     const details = getModelDetails(event.details);
     const tokenUsage = details?.tokenUsage;
-    const modelIntent = details?.modelIntent || 'Unknown';
+    let modelIntent = details?.modelIntent || 'Unknown';
+    if (modelIntent === 'default') modelIntent = 'Auto';
     const timestamp = new Date(parseInt(event.timestamp)).toISOString();
     const cost = (event.priceCents || 0) / 100;
     

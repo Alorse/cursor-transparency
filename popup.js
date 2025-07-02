@@ -286,6 +286,7 @@ function updateUsageList(events) {
     const details = getModelDetails(event.details);
     const tokenUsage = details?.tokenUsage;
     let modelIntent = details?.modelIntent || 'Unknown Model';
+    if (modelIntent === 'default') modelIntent = 'Auto';
     const timestamp = new Date(parseInt(event.timestamp));
     const cost = event.priceCents || 0;
     const isErrored = event?.status === 'errored';
