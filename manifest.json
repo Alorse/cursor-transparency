@@ -4,13 +4,13 @@
   "version": "1.0.0",
   "description": "Track and analyze your Cursor.com usage with advanced filtering and totals",
   "permissions": ["activeTab", "storage", "scripting", "tabs"],
-  "host_permissions": ["https://www.cursor.com/*"],
+  "host_permissions": ["https://www.cursor.com/*", "https://cursor.com/*"],
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
-      "matches": ["https://www.cursor.com/*"],
+      "matches": ["https://www.cursor.com/*", "https://cursor.com/*"],
       "js": ["content.js"],
       "run_at": "document_end"
     }
