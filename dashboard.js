@@ -133,21 +133,6 @@ function setupEventListeners() {
     });
   }
   
-  // Filter buttons
-  elements.filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      elements.filterBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      
-      currentFilter = btn.dataset.filter;
-      customDateRange = null;
-      
-      if (allUsageData) {
-        displayData();
-      }
-    });
-  });
-  
   // Custom date range (only if elements exist - they're in popup, not dashboard)
   if (elements.applyCustomRange && elements.dateFrom && elements.dateTo) {
     elements.applyCustomRange.addEventListener('click', () => {
@@ -208,6 +193,18 @@ function setupEventListeners() {
     elements.exportJson.addEventListener('click', () => {
       if (allUsageData) {
         exportData('json');
+      }
+    });
+  }
+
+  // New: Add event listener for timeRangeDropdown
+  const timeRangeDropdown = document.getElementById('timeRangeDropdown');
+  if (timeRangeDropdown) {
+    timeRangeDropdown.addEventListener('change', (event) => {
+      currentFilter = event.target.value;
+      customDateRange = null;
+      if (allUsageData) {
+        displayData();
       }
     });
   }

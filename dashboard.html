@@ -22,6 +22,14 @@
             <div class="status-indicator" id="statusIndicator"></div>
             <span id="statusText">Checking connection...</span>
           </div>
+          <select id="timeRangeDropdown" class="time-range-dropdown">
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="last4hours">Last 4 Hours</option>
+            <option value="last24hours">Last 24 Hours</option>
+            <option value="last7days">Last 7 Days</option>
+          </select>
           <button id="refreshBtn" class="refresh-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="m3 12 2-2m0 0 7-7 7 7M13 5v6h6m-9 1a3 3 0 1 0 6 0"></path>
@@ -62,32 +70,12 @@
 
     <!-- Main Dashboard -->
     <div id="mainContent" class="main-dashboard hidden">
-      <!-- Filters Section -->
-      <section class="filters-section">
-        <div class="section-header">
-          <h2 class="section-title">Time Range Filters</h2>
-          <div class="last-updated">
-            <span id="lastUpdated">Last updated: Never</span>
-          </div>
-        </div>
-        
-        <div class="filters-container">
-          <div class="quick-filters">
-            <button class="filter-btn active" data-filter="all">All Time</button>
-            <button class="filter-btn" data-filter="today">Today</button>
-            <button class="filter-btn" data-filter="yesterday">Yesterday</button>
-            <button class="filter-btn" data-filter="last4hours">Last 4 Hours</button>
-            <button class="filter-btn" data-filter="last24hours">Last 24 Hours</button>
-            <button class="filter-btn" data-filter="last7days">Last 7 Days</button>
-          </div>
-        </div>
-      </section>
-
       <!-- Stats Overview -->
       <section class="stats-section">
         <div class="section-header">
           <h2 class="section-title">Usage Overview</h2>
           <div class="results-summary">
+            <span id="lastUpdated">Last updated: Never</span> • 
             <span id="resultsCount">0 events</span> • 
             <span id="timeRange">All time</span>
           </div>

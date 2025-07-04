@@ -737,3 +737,18 @@ section {
 .user-analytics-vertical .model-stat {
   line-height: 1.1rem;
 }
+
+.time-range-dropdown {
+  background: #2d3748;
+  border: 1px solid #4a5568;
+  color: #a0aec0;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  margin-right: 1rem;
+  transition: all 0.2s ease;
+}
+.time-range-dropdown:hover {
+  background: #4a5568;
+  color: #e0e0e0;
+}
