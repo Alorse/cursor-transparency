@@ -903,30 +903,22 @@ function updateUserAnalyticsPanel() {
     acc.totalTabsAccepted += day.totalTabsAccepted || 0;
     return acc;
   }, { linesAdded: 0, linesDeleted: 0, totalTabsShown: 0, totalTabsAccepted: 0 });
-  // Render stat cards (no icons)
+  // Render stat cards (vertical, no grid)
   panel.innerHTML = `
     <div class="stat-card">
-      <div class="stat-content">
-        <div class="stat-value">${formatNumber(sums.linesAdded)}</div>
-        <div class="stat-label">Lines Added</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-content">
-        <div class="stat-value">${formatNumber(sums.linesDeleted)}</div>
-        <div class="stat-label">Lines Deleted</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-content">
-        <div class="stat-value">${formatNumber(sums.totalTabsShown)}</div>
-        <div class="stat-label">Tabs Shown</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-content">
-        <div class="stat-value">${formatNumber(sums.totalTabsAccepted)}</div>
-        <div class="stat-label">Tabs Accepted</div>
+      <div class="model-stats">
+        <div class="model-stat">
+          <span class="stat-value-small">${formatNumber(sums.linesAdded)}</span> Lines Added
+        </div>
+        <div class="model-stat">
+          <span class="stat-value-small">${formatNumber(sums.linesDeleted)}</span> Lines Deleted
+        </div>
+        <div class="model-stat">
+          <span class="stat-value-small">${formatNumber(sums.totalTabsShown)}</span> Tabs Shown
+        </div>
+        <div class="model-stat">
+          <span class="stat-value-small">${formatNumber(sums.totalTabsAccepted)}</span> Tabs Accepted
+        </div>
       </div>
     </div>
   `;

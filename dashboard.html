@@ -93,45 +93,45 @@
           </div>
         </div>
         
-        <div class="stats-grid">
-          <div class="stat-card cost-card">
-            <div class="stat-icon">💰</div>
-            <div class="stat-content">
-              <div class="stat-value" id="totalCost">$0.00</div>
-              <div class="stat-label">Total Cost</div>
-              <div class="stat-change" id="costChange"></div>
+        <div class="user-overview-grid" style="display: grid; grid-template-columns: 3fr 1fr; gap: 1.5rem; align-items: start; margin-top: 1rem;">
+          <div id="userStatsPanel">
+            <div class="stats-grid">
+              <div class="stat-card cost-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-content">
+                  <div class="stat-value" id="totalCost">$0.00</div>
+                  <div class="stat-label">Total Cost</div>
+                  <div class="stat-change" id="costChange"></div>
+                </div>
+              </div>
+              <div class="stat-card tokens-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-content">
+                  <div class="stat-value" id="totalInputTokens">0</div>
+                  <div class="stat-label">Input Tokens</div>
+                  <div class="stat-sublabel" id="inputTokensDetail"></div>
+                </div>
+              </div>
+              <div class="stat-card cache-card">
+                <div class="stat-icon">🔄</div>
+                <div class="stat-content">
+                  <div class="stat-value" id="totalCacheReadTokens">0</div>
+                  <div class="stat-label">Cache Read Tokens</div>
+                  <div class="stat-sublabel" id="cacheTokensDetail"></div>
+                </div>
+              </div>
+              <div class="stat-card requests-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                  <div class="stat-value" id="totalRequests">0</div>
+                  <div class="stat-label">Total Requests</div>
+                  <div class="stat-sublabel" id="requestsDetail"></div>
+                </div>
+              </div>
             </div>
           </div>
-          
-          <div class="stat-card tokens-card">
-            <div class="stat-icon">📝</div>
-            <div class="stat-content">
-              <div class="stat-value" id="totalInputTokens">0</div>
-              <div class="stat-label">Input Tokens</div>
-              <div class="stat-sublabel" id="inputTokensDetail"></div>
-            </div>
-          </div>
-          
-          <div class="stat-card cache-card">
-            <div class="stat-icon">🔄</div>
-            <div class="stat-content">
-              <div class="stat-value" id="totalCacheReadTokens">0</div>
-              <div class="stat-label">Cache Read Tokens</div>
-              <div class="stat-sublabel" id="cacheTokensDetail"></div>
-            </div>
-          </div>
-          
-          <div class="stat-card requests-card">
-            <div class="stat-icon">📊</div>
-            <div class="stat-content">
-              <div class="stat-value" id="totalRequests">0</div>
-              <div class="stat-label">Total Requests</div>
-              <div class="stat-sublabel" id="requestsDetail"></div>
-            </div>
-          </div>
+          <div id="userAnalyticsPanel" class="user-analytics-vertical"></div>
         </div>
-
-        <div id="userAnalyticsPanel" class="stats-grid" style="margin-top: 1rem;"></div>
       </section>
 
       <!-- Dashboard Grid -->
