@@ -12,6 +12,8 @@ let modelBreakdownView = 'cost';
 
 // New: Analytics state
 let userAnalyticsData = null;
+let analyticsCurrentPage = 1;
+const analyticsPageSize = 100;
 
 // DOM elements
 const elements = {
@@ -203,6 +205,7 @@ function setupEventListeners() {
     timeRangeDropdown.addEventListener('change', (event) => {
       currentFilter = event.target.value;
       customDateRange = null;
+      analyticsCurrentPage = 1; // Reset page on filter change
       if (allUsageData) {
         displayData();
       }
@@ -616,15 +619,23 @@ function updateAnalyticsTable(events) {
         </td>
       </tr>
     `;
+    updatePaginationControls(0, 0, 0);
     return;
   }
   
-  // Sort by timestamp (newest first) and limit to 100 rows
+  // Sort by timestamp (newest first)
   const sortedEvents = [...events]
-    .sort((a, b) => parseInt(b.timestamp) - parseInt(a.timestamp))
-    .slice(0, 100);
+    .sort((a, b) => parseInt(b.timestamp) - parseInt(a.timestamp));
+
+  // Pagination logi
+  const totalPages = Math.ceil(sortedEvents.length / analyticsPageSize);
+  if (analyticsCurrentPage > totalPages) analyticsCurrentPage = totalPages || 1;
   
-  tbody.innerHTML = sortedEvents.map(event => {
+  const startIndex = (analyticsCurrentPage - 1) * analyticsPageSize;
+  const endIndex = startIndex + analyticsPageSize;
+  const paginatedEvents = sortedEvents.slice(startIndex, endIndex);
+  
+  tbody.innerHTML = paginatedEvents.map(event => {
     const details = getModelDetails(event.details);
     const tokenUsage = details?.tokenUsage;
     let modelIntent = details?.modelIntent || 'Unknown';
@@ -637,7 +648,7 @@ function updateAnalyticsTable(events) {
       <tr${isErrored ? ' class="errored-bg"' : ''}>
         <td>${timestamp.toLocaleString()}</td>
         <td>${modelIntent}</td>
-        <td>$${(cost / 100).toFixed(3)}</td>
+        <td>${(cost / 100).toFixed(3)}</td>
         <td>${formatNumber(tokenUsage?.inputTokens || 0)}</td>
         <td>${formatNumber(tokenUsage?.outputTokens || 0)}</td>
         <td>${formatNumber(tokenUsage?.cacheReadTokens || 0)}</td>
@@ -645,6 +656,53 @@ function updateAnalyticsTable(events) {
       </tr>
     `;
   }).join('');
+
+  updatePaginationControls(sortedEvents.length, analyticsCurrentPage, totalPages);
+}
+
+/**
+ * Update pagination controls
+ */
+function updatePaginationControls(totalItems, currentPage, totalPages) {
+  const paginationContainer = document.getElementById('paginationContainer');
+  if (!paginationContainer) return;
+  
+  const startIndex = (currentPage - 1) * analyticsPageSize + 1;
+  const endIndex = Math.min(startIndex + analyticsPageSize - 1, totalItems);
+  
+  if (totalPages <= 1) {
+    paginationContainer.innerHTML = `
+    <div class="pagination-info">
+      Showing ${startIndex}-${endIndex} of ${totalItems} results
+    </div>`;
+    return;
+  }
+
+  paginationContainer.innerHTML = `
+    <div class="pagination-info">
+      Showing ${startIndex}-${endIndex} of ${totalItems} results
+    </div>
+    <div class="pagination-buttons">
+      <button id="prevPageBtn" class="pagination-btn" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
+      <span>Page ${currentPage} of ${totalPages}</span>
+      <button id="nextPageBtn" class="pagination-btn" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
+    </div>
+  `;
+
+  // Add event listeners
+  document.getElementById('prevPageBtn').addEventListener('click', () => {
+    if (analyticsCurrentPage > 1) {
+      analyticsCurrentPage--;
+      displayData();
+    }
+  });
+
+  document.getElementById('nextPageBtn').addEventListener('click', () => {
+    if (analyticsCurrentPage < totalPages) {
+      analyticsCurrentPage++;
+      displayData();
+    }
+  });
 }
 
 /**

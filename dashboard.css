@@ -634,6 +634,46 @@ section {
   background: rgba(66, 153, 225, 0.05);
 }
 
+/* Pagination */
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-top: 1px solid #2d3748;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: #a0aec0;
+}
+
+.pagination-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pagination-btn {
+  background: #2d3748;
+  border: 1px solid #4a5568;
+  color: #a0aec0;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #4a5568;
+  color: #e0e0e0;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 8px;
