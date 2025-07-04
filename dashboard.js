@@ -10,6 +10,9 @@ let customDateRange = null;
 let currentSort = 'newest';
 let modelBreakdownView = 'cost';
 
+// New: Analytics state
+let userAnalyticsData = null;
+
 // DOM elements
 const elements = {
   // States
@@ -101,6 +104,10 @@ async function initialize() {
   await new Promise(resolve => setTimeout(resolve, 500));
   
   await fetchAndDisplayData();
+  // Fetch user analytics (once)
+  await fetchAndStoreUserAnalytics();
+  // Render analytics panel for the first time
+  updateUserAnalyticsPanel();
 }
 
 /**
@@ -309,6 +316,8 @@ function displayData() {
   updateModelBreakdown(filteredEvents);
   updateAnalyticsTable(filteredEvents);
   updateResultsInfo(filteredEvents.length);
+  // Update analytics panel on every filter change
+  updateUserAnalyticsPanel();
 }
 
 /**
@@ -794,6 +803,133 @@ function isValidEvent(event) {
   const details = getModelDetails(event.details);
   const isEmptyDetails = !details || Object.keys(details).length === 0;
   return !(isEmptyDetails && (event.priceCents === 0));
+}
+
+// Fetch user analytics from background
+async function fetchAndStoreUserAnalytics() {
+  // Use the same time range as the current filter for initial fetch
+  // But fetch for a wide range to allow local filtering
+  const now = Date.now();
+  const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+  const params = {
+    teamId: 0,
+    userId: 0,
+    startDate: String(thirtyDaysAgo),
+    endDate: String(now)
+  };
+  try {
+    const response = await new Promise(resolve => {
+      chrome.runtime.sendMessage({ action: 'fetchUserAnalytics', params }, resolve);
+    });
+    if (response.success) {
+      userAnalyticsData = response.data;
+    } else {
+      userAnalyticsData = null;
+      console.error('Failed to fetch user analytics:', response.error);
+    }
+  } catch (e) {
+    userAnalyticsData = null;
+    console.error('Error fetching user analytics:', e);
+  }
+}
+
+// Helper: get current filter's date range
+function getCurrentDateRange() {
+  const now = Date.now();
+  let startTime = 0;
+  let endTime = now;
+  // Check for future timestamps
+  if (allUsageData && allUsageData.usageEvents) {
+    const maxEventTime = Math.max(...allUsageData.usageEvents.map(e => parseInt(e.timestamp)));
+    if (maxEventTime > now) endTime = maxEventTime;
+  }
+  if (customDateRange) {
+    startTime = customDateRange.from;
+    endTime = customDateRange.to;
+  } else {
+    switch (currentFilter) {
+      case 'today':
+        const todayStart = new Date(endTime);
+        todayStart.setHours(0, 0, 0, 0);
+        startTime = todayStart.getTime();
+        break;
+      case 'yesterday':
+        const yesterdayStart = new Date(endTime);
+        yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+        yesterdayStart.setHours(0, 0, 0, 0);
+        const yesterdayEnd = new Date(yesterdayStart);
+        yesterdayEnd.setHours(23, 59, 59, 999);
+        startTime = yesterdayStart.getTime();
+        endTime = yesterdayEnd.getTime();
+        break;
+      case 'last4hours':
+        startTime = endTime - (4 * 60 * 60 * 1000);
+        break;
+      case 'last24hours':
+        startTime = endTime - (24 * 60 * 60 * 1000);
+        break;
+      case 'last7days':
+        startTime = endTime - (7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'all':
+      default:
+        startTime = 0;
+        break;
+    }
+  }
+  return { startTime, endTime };
+}
+
+// Update the analytics panel
+function updateUserAnalyticsPanel() {
+  const panel = document.getElementById('userAnalyticsPanel');
+  if (!panel) return;
+  if (!userAnalyticsData || !userAnalyticsData.dailyMetrics) {
+    panel.innerHTML = '<div style="color:#a0aec0;">No analytics data available</div>';
+    return;
+  }
+  // Get current filter's date range
+  const { startTime, endTime } = getCurrentDateRange();
+  // Filter dailyMetrics by date
+  const filtered = userAnalyticsData.dailyMetrics.filter(day => {
+    const dayTime = parseInt(day.date);
+    return dayTime >= startTime && dayTime <= endTime;
+  });
+  // Sum the fields
+  const sums = filtered.reduce((acc, day) => {
+    acc.linesAdded += day.linesAdded || 0;
+    acc.linesDeleted += day.linesDeleted || 0;
+    acc.totalTabsShown += day.totalTabsShown || 0;
+    acc.totalTabsAccepted += day.totalTabsAccepted || 0;
+    return acc;
+  }, { linesAdded: 0, linesDeleted: 0, totalTabsShown: 0, totalTabsAccepted: 0 });
+  // Render stat cards (no icons)
+  panel.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-value">${formatNumber(sums.linesAdded)}</div>
+        <div class="stat-label">Lines Added</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-value">${formatNumber(sums.linesDeleted)}</div>
+        <div class="stat-label">Lines Deleted</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-value">${formatNumber(sums.totalTabsShown)}</div>
+        <div class="stat-label">Tabs Shown</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-value">${formatNumber(sums.totalTabsAccepted)}</div>
+        <div class="stat-label">Tabs Accepted</div>
+      </div>
+    </div>
+  `;
 }
 
 // Initialize when DOM is loaded
