@@ -13,7 +13,7 @@
 html, body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: #000000; /* Negro puro */
+  background: #16181C; /* Negro puro */
   color: #e0e0e0;
   line-height: 1.6;
 }
@@ -21,7 +21,7 @@ html, body {
 /* Dashboard Container */
 .dashboard-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%); /* Gradiente a negro más oscuro */
+  background: linear-gradient(135deg, #16181C 0%, #1a1a1a 100%); /* Gradiente a negro más oscuro */
 }
 
 /* Header */
@@ -373,7 +373,7 @@ section {
 }
 
 .stat-card {
-  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%); /* Gradiente más oscuro */
+  background: linear-gradient(135deg, #1a1a1a 0%, #16181C 100%); /* Gradiente más oscuro */
   border: 1px solid #333333; /* Borde más oscuro */
   border-radius: 8px; /* Bordes menos redondeados */
   padding: 1.5rem; /* Aumentar padding */
@@ -783,7 +783,7 @@ section {
   align-items: flex-start; /* Alinear a la izquierda */
   gap: 1rem; /* Aumentar espacio entre elementos */
   padding: 1.5rem; /* Aumentar padding */
-  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%); /* Gradiente más oscuro */
+  background: linear-gradient(135deg, #1a1a1a 0%, #16181C 100%); /* Gradiente más oscuro */
   border: 1px solid #333333; /* Borde más oscuro */
   border-radius: 8px; /* Bordes menos redondeados */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Añadir sombra sutil */
