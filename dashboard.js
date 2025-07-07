@@ -400,19 +400,25 @@ function filterEvents(events) {
  * Calculate comprehensive statistics
  */
 function calculateStats(events) {
-  const stats = {
-    totalCents: 0,
-    totalInputTokens: 0,
-    totalOutputTokens: 0,
-    totalCacheReadTokens: 0,
-    totalCacheWriteTokens: 0,
-    totalRequests: events.length,
-    averageCostPerRequest: 0,
-    tokensPerRequest: 0
-  };
+  const statsBySubscription = {};
   
   events.forEach(event => {
+    const subscriptionProductId = event.subscriptionProductId || 'unknown';
+    if (!statsBySubscription[subscriptionProductId]) {
+      statsBySubscription[subscriptionProductId] = {
+        totalCents: 0,
+        totalInputTokens: 0,
+        totalOutputTokens: 0,
+        totalCacheReadTokens: 0,
+        totalCacheWriteTokens: 0,
+        totalRequests: 0,
+        averageCostPerRequest: 0,
+        tokensPerRequest: 0
+      };
+    }
+    const stats = statsBySubscription[subscriptionProductId];
     stats.totalCents += event.priceCents || 0;
+    stats.totalRequests += 1;
     
     const details = getModelDetails(event.details);
     const tokenUsage = details?.tokenUsage;
@@ -424,13 +430,42 @@ function calculateStats(events) {
     }
   });
   
-  // Calculate averages
-  if (stats.totalRequests > 0) {
-    stats.averageCostPerRequest = stats.totalCents / stats.totalRequests;
-    stats.tokensPerRequest = (stats.totalInputTokens + stats.totalOutputTokens) / stats.totalRequests;
+  // Calculate averages for each subscription
+  Object.values(statsBySubscription).forEach(stats => {
+    if (stats.totalRequests > 0) {
+      stats.averageCostPerRequest = stats.totalCents / stats.totalRequests;
+      stats.tokensPerRequest = (stats.totalInputTokens + stats.totalOutputTokens) / stats.totalRequests;
+    }
+  });
+  
+  // Aggregate stats for display
+  const aggregatedStats = {
+    totalCents: 0,
+    totalInputTokens: 0,
+    totalOutputTokens: 0,
+    totalCacheReadTokens: 0,
+    totalCacheWriteTokens: 0,
+    totalRequests: 0,
+    averageCostPerRequest: 0,
+    tokensPerRequest: 0,
+    bySubscription: statsBySubscription
+  };
+  
+  Object.values(statsBySubscription).forEach(stats => {
+    aggregatedStats.totalCents += stats.totalCents;
+    aggregatedStats.totalInputTokens += stats.totalInputTokens;
+    aggregatedStats.totalOutputTokens += stats.totalOutputTokens;
+    aggregatedStats.totalCacheReadTokens += stats.totalCacheReadTokens;
+    aggregatedStats.totalCacheWriteTokens += stats.totalCacheWriteTokens;
+    aggregatedStats.totalRequests += stats.totalRequests;
+  });
+  
+  if (aggregatedStats.totalRequests > 0) {
+    aggregatedStats.averageCostPerRequest = aggregatedStats.totalCents / aggregatedStats.totalRequests;
+    aggregatedStats.tokensPerRequest = (aggregatedStats.totalInputTokens + aggregatedStats.totalOutputTokens) / aggregatedStats.totalRequests;
   }
   
-  return stats;
+  return aggregatedStats;
 }
 
 /**
@@ -489,6 +524,10 @@ function updateTimeline(events) {
     const tokenUsage = details?.tokenUsage || {};
     let modelIntent = details?.modelIntent || 'Unknown Model';
     if (modelIntent === 'default') modelIntent = 'Auto';
+    const subscriptionProductId = event.subscriptionProductId;
+    if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
+      modelIntent += ` - [${subscriptionProductId}]`;
+    }
     const timestamp = new Date(parseInt(event.timestamp));
     const cost = event.priceCents || 0;
     const isErrored = event?.status === 'errored';
@@ -540,6 +579,10 @@ function updateModelBreakdown(events) {
     const tokenUsage = details?.tokenUsage || {};
     let modelIntent = details?.modelIntent || 'Unknown Model';
     if (modelIntent === 'default') modelIntent = 'Auto';
+    const subscriptionProductId = event.subscriptionProductId;
+    if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
+      modelIntent += ` - [${subscriptionProductId}]`;
+    }
     const cost = event.priceCents || 0;
     
     if (!modelStats[modelIntent]) {
@@ -627,7 +670,7 @@ function updateAnalyticsTable(events) {
   const sortedEvents = [...events]
     .sort((a, b) => parseInt(b.timestamp) - parseInt(a.timestamp));
 
-  // Pagination logi
+  // Pagination logic
   const totalPages = Math.ceil(sortedEvents.length / analyticsPageSize);
   if (analyticsCurrentPage > totalPages) analyticsCurrentPage = totalPages || 1;
   
@@ -640,6 +683,10 @@ function updateAnalyticsTable(events) {
     const tokenUsage = details?.tokenUsage;
     let modelIntent = details?.modelIntent || 'Unknown';
     if (modelIntent === 'default') modelIntent = 'Auto';
+    const subscriptionProductId = event.subscriptionProductId;
+    if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
+      modelIntent += ` - [${subscriptionProductId}]`;
+    }
     const timestamp = new Date(parseInt(event.timestamp));
     const cost = event.priceCents || 0;
     const isErrored = event?.status === 'errored';
@@ -755,6 +802,10 @@ function convertToCSV(events) {
     const tokenUsage = details?.tokenUsage;
     let modelIntent = details?.modelIntent || 'Unknown';
     if (modelIntent === 'default') modelIntent = 'Auto';
+    const subscriptionProductId = event.subscriptionProductId;
+    if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
+      modelIntent += ` - [${subscriptionProductId}]`;
+    }
     const timestamp = new Date(parseInt(event.timestamp)).toISOString();
     const cost = (event.priceCents || 0) / 100;
     
