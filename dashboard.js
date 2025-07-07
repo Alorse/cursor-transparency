@@ -526,7 +526,7 @@ function updateTimeline(events) {
     if (modelIntent === 'default') modelIntent = 'Auto';
     const subscriptionProductId = event.subscriptionProductId;
     if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
-      modelIntent += ` - [${subscriptionProductId}]`;
+      modelIntent += ` [${subscriptionProductId}]`;
     }
     const timestamp = new Date(parseInt(event.timestamp));
     const cost = event.priceCents || 0;
@@ -581,7 +581,7 @@ function updateModelBreakdown(events) {
     if (modelIntent === 'default') modelIntent = 'Auto';
     const subscriptionProductId = event.subscriptionProductId;
     if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
-      modelIntent += ` - [${subscriptionProductId}]`;
+      modelIntent += ` [${subscriptionProductId}]`;
     }
     const cost = event.priceCents || 0;
     
@@ -685,7 +685,7 @@ function updateAnalyticsTable(events) {
     if (modelIntent === 'default') modelIntent = 'Auto';
     const subscriptionProductId = event.subscriptionProductId;
     if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
-      modelIntent += ` - [${subscriptionProductId}]`;
+      modelIntent += ` [${subscriptionProductId}]`;
     }
     const timestamp = new Date(parseInt(event.timestamp));
     const cost = event.priceCents || 0;
