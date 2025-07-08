@@ -37,7 +37,7 @@ export function initDOM() {
     sortOrder: 'sortOrder',
     
     // Models
-    toggleBtns: '.toggle-btn', // This is a class selector
+    modelBreakdownSort: 'modelBreakdownSort',
     modelBreakdown: 'modelBreakdown',
     
     // Analytics

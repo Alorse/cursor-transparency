@@ -40,10 +40,8 @@ export function setupEventListeners(fetchDataCallback, renderDataCallback) {
     dom.sortOrder.addEventListener('change', handleSortChange);
   }
 
-  if (dom.toggleBtns && dom.toggleBtns.length) {
-    dom.toggleBtns.forEach(btn => {
-      btn.addEventListener('click', handleModelViewToggle);
-    });
+  if (dom.modelBreakdownSort) {
+    dom.modelBreakdownSort.addEventListener('change', handleModelBreakdownSortChange);
   }
 
   if (dom.exportCsv) {
@@ -86,10 +84,8 @@ function handleSortChange(e) {
   if (state.allUsageData) renderData();
 }
 
-function handleModelViewToggle(e) {
-  dom.toggleBtns.forEach(b => b.classList.remove('active'));
-  e.currentTarget.classList.add('active');
-  state.modelBreakdownView = e.currentTarget.dataset.view;
+function handleModelBreakdownSortChange(e) {
+  state.modelBreakdownView = e.target.value;
   if (state.allUsageData) renderData();
 }
 

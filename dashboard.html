@@ -133,10 +133,12 @@
         <!-- Model Breakdown -->
         <section class="models-section">
           <div class="section-header">
-            <h2 class="section-title">Model Usage Breakdown</h2>
-            <div class="breakdown-toggle">
-              <button class="toggle-btn active" data-view="cost">By Cost</button>
-              <button class="toggle-btn" data-view="requests">By Requests</button>
+            <h2 class="section-title">Model Usage</h2>
+            <div class="timeline-controls">
+              <select id="modelBreakdownSort" class="sort-select">
+                <option value="cost">By Cost</option>
+                <option value="requests">By Requests</option>
+              </select>
             </div>
           </div>
           
