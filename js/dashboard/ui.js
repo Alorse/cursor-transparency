@@ -80,17 +80,82 @@ export function updateResultsInfo(count) {
 }
 
 /**
- * Updates the main statistics display.
+ * Renders the entire overview panel, including KPI cards and detailed breakdown.
  * @param {object} stats - The calculated statistics.
  */
-export function updateStatsDisplay(stats) {
+export function updateOverviewPanel(stats) {
+  // Update KPI cards
   dom.totalCost.textContent = `$${(stats.totalCents / 100).toFixed(2)}`;
-  dom.totalInputTokens.textContent = formatNumber(stats.totalInputTokens);
-  dom.totalCacheReadTokens.textContent = formatNumber(stats.totalCacheReadTokens);
   dom.totalRequests.textContent = formatNumber(stats.totalRequests);
-  dom.inputTokensDetail.textContent = `+${formatNumber(stats.totalOutputTokens)} output`;
-  dom.cacheTokensDetail.textContent = `+${formatNumber(stats.totalCacheWriteTokens)} write`;
-  dom.requestsDetail.textContent = `~${formatNumber(Math.round(stats.tokensPerRequest))} tokens/req`;
+
+  // Prepare data for detailed breakdown
+  const userAnalytics = {
+    linesAdded: 0,
+    linesDeleted: 0,
+    tabsShown: 0,
+    tabsAccepted: 0,
+  };
+
+  if (state.userAnalyticsData && state.userAnalyticsData.dailyMetrics) {
+    const { startTime, endTime } = getCurrentDateRange();
+    const filtered = state.userAnalyticsData.dailyMetrics.filter(day => {
+      const dayTime = parseInt(day.date);
+      return dayTime >= startTime && dayTime <= endTime;
+    });
+
+    filtered.forEach(day => {
+      userAnalytics.linesAdded += day.linesAdded || 0;
+      userAnalytics.linesDeleted += day.linesDeleted || 0;
+      userAnalytics.tabsShown += day.totalTabsShown || 0;
+      userAnalytics.tabsAccepted += day.totalTabsAccepted || 0;
+    });
+  }
+
+  // Render detailed breakdown panel
+  dom.detailedBreakdownPanel.innerHTML = `
+    <div class="breakdown-group">
+      <h3 class="breakdown-group-title">Token Usage</h3>
+      <div class="breakdown-grid">
+        <div class="breakdown-item">
+          <span class="breakdown-value">${formatNumber(stats.totalInputTokens)}</span>
+          <span class="breakdown-label">Input Tokens</span>
+        </div>
+        <div class="breakdown-item">
+          <span class="breakdown-value">${formatNumber(stats.totalOutputTokens)}</span>
+          <span class="breakdown-label">Output Tokens</span>
+        </div>
+        <div class="breakdown-item">
+          <span class="breakdown-value">${formatNumber(stats.totalCacheReadTokens)}</span>
+          <span class="breakdown-label">Cache Read</span>
+        </div>
+        <div class="breakdown-item">
+          <span class="breakdown-value">${formatNumber(stats.totalCacheWriteTokens)}</span>
+          <span class="breakdown-label">Cache Write</span>
+        </div>
+      </div>
+    </div>
+    <div class="breakdown-group">
+      <h3 class="breakdown-group-title">User Activity</h3>
+      <div class="breakdown-grid">
+        <div class="breakdown-item">
+          <span class="breakdown-value">${formatNumber(userAnalytics.linesAdded)}</span>
+          <span class="breakdown-label">Lines Added</span>
+        </div>
+        <div class="breakdown-item">
+          <span class="breakdown-value">${formatNumber(userAnalytics.linesDeleted)}</span>
+          <span class="breakdown-label">Lines Deleted</span>
+        </div>
+        <div class="breakdown-item">
+          <span class="breakdown-value">${formatNumber(userAnalytics.tabsShown)}</span>
+          <span class="breakdown-label">Tabs Shown</span>
+        </div>
+        <div class="breakdown-item">
+          <span class="breakdown-value">${formatNumber(userAnalytics.tabsAccepted)}</span>
+          <span class="breakdown-label">Tabs Accepted</span>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 /**
@@ -372,52 +437,6 @@ function updatePaginationControls(totalItems, currentPage, totalPages) {
       // We'll handle this in the main script.
     }
   });
-}
-
-/**
- * Updates the user analytics panel.
- */
-export function updateUserAnalyticsPanel() {
-    const panel = dom.userAnalyticsPanel;
-    if (!panel) return;
-    if (!state.userAnalyticsData || !state.userAnalyticsData.dailyMetrics) {
-        panel.innerHTML = '<div style="color:#a0aec0;">No analytics data available</div>';
-        return;
-    }
-
-    const { startTime, endTime } = getCurrentDateRange();
-    const filtered = state.userAnalyticsData.dailyMetrics.filter(day => {
-        const dayTime = parseInt(day.date);
-        return dayTime >= startTime && dayTime <= endTime;
-    });
-
-    const sums = filtered.reduce((acc, day) => {
-        acc.linesAdded += day.linesAdded || 0;
-        acc.linesDeleted += day.linesDeleted || 0;
-        acc.totalTabsShown += day.totalTabsShown || 0;
-        acc.totalTabsAccepted += day.totalTabsAccepted || 0;
-        return acc;
-    }, { linesAdded: 0, linesDeleted: 0, totalTabsShown: 0, totalTabsAccepted: 0 });
-
-    panel.innerHTML = `
-    <div class="model-stats">
-      <div class="model-stat">
-        <span class="stat-value-small">${formatNumber(sums.linesAdded)}</span>
-        <span>Lines Added</span>
-      </div>
-      <div class="model-stat">
-        <span class="stat-value-small">${formatNumber(sums.linesDeleted)}</span>
-        <span>Lines Deleted</span>
-      </div>
-      <div class="model-stat">
-        <span class="stat-value-small">${formatNumber(sums.totalTabsShown)}</span>
-        <span>Tabs Shown</span>
-      </div>
-      <div class="model-stat">
-        <span class="stat-value-small">${formatNumber(sums.totalTabsAccepted)}</span>
-        <span>Tabs Accepted</span>
-      </div>
-    </div>`;
 }
 
 /**

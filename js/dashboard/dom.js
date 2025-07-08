@@ -25,29 +25,16 @@ export function initDOM() {
     lastUpdated: 'lastUpdated',
     resultsCount: 'resultsCount',
     timeRange: 'timeRange',
-    connectionStatus: 'connectionStatus',
-    statusIndicator: 'statusIndicator',
-    statusText: 'statusText',
     
-    // Stats
+    // Overview Panel
+    overviewPanel: 'overviewPanel',
     totalCost: 'totalCost',
-    totalInputTokens: 'totalInputTokens',
-    totalCacheReadTokens: 'totalCacheReadTokens',
     totalRequests: 'totalRequests',
-    inputTokensDetail: 'inputTokensDetail',
-    cacheTokensDetail: 'cacheTokensDetail',
-    requestsDetail: 'requestsDetail',
-    
-    // Filters
-    filterBtns: '.filter-btn', // This is a class selector
-    dateFrom: 'dateFrom',
-    dateTo: 'dateTo',
-    applyCustomRange: 'applyCustomRange',
-    timeRangeDropdown: 'timeRangeDropdown',
-    
+    detailedBreakdownPanel: 'detailedBreakdownPanel',
+
     // Timeline
-    sortOrder: 'sortOrder',
     usageTimeline: 'usageTimeline',
+    sortOrder: 'sortOrder',
     
     // Models
     toggleBtns: '.toggle-btn', // This is a class selector
@@ -69,4 +56,18 @@ export function initDOM() {
       dom[key] = document.getElementById(elementIds[key]);
     }
   }
+
+  dom.lastUpdated = document.getElementById('lastUpdated');
+  dom.resultsCount = document.getElementById('resultsCount');
+  dom.timeRange = document.getElementById('timeRange');
+
+  // Overview Panel
+  dom.overviewPanel = document.getElementById('overviewPanel');
+  dom.totalCost = document.getElementById('totalCost');
+  dom.totalRequests = document.getElementById('totalRequests');
+  dom.detailedBreakdownPanel = document.getElementById('detailedBreakdownPanel');
+
+  // Timeline
+  dom.usageTimeline = document.getElementById('usageTimeline');
+  dom.sortOrder = document.getElementById('sortOrder');
 } 

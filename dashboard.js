@@ -15,13 +15,12 @@ import {
   showMainContent, 
   updateConnectionStatus, 
   updateLastUpdated,
-  updateStatsDisplay,
+  updateOverviewPanel,
   updateTimeline,
   updateModelBreakdown,
   updateAnalyticsTable,
   updateModelFilter,
   updateResultsInfo,
-  updateUserAnalyticsPanel
 } from './js/dashboard/ui.js';
 import { getModelDetails, isValidEvent } from './js/dashboard/utils.js';
 
@@ -39,8 +38,6 @@ async function initialize() {
   await new Promise(resolve => setTimeout(resolve, 500));
   
   await fetchAndDisplayData();
-  state.userAnalyticsData = await fetchUserAnalytics();
-  updateUserAnalyticsPanel();
 }
 
 /**
@@ -53,7 +50,15 @@ async function fetchAndDisplayData(forceRefresh = false) {
     const isConnected = await checkConnection();
     updateConnectionStatus(isConnected, isConnected ? 'Connected to Cursor.com' : 'Data loaded successfully');
 
-    state.allUsageData = await fetchUsageData(forceRefresh);
+    // Fetch both datasets in parallel
+    const usageDataPromise = fetchUsageData(forceRefresh);
+    const userAnalyticsPromise = fetchUserAnalytics();
+    
+    const [usageData, userAnalyticsData] = await Promise.all([usageDataPromise, userAnalyticsPromise]);
+    
+    state.allUsageData = usageData;
+    state.userAnalyticsData = userAnalyticsData;
+
     displayData();
     showMainContent();
     updateLastUpdated();
@@ -77,13 +82,12 @@ function displayData() {
   const filteredEvents = filterEvents(state.allUsageData.usageEvents).filter(isValidEvent);
   const stats = calculateStats(filteredEvents);
   
-  updateStatsDisplay(stats);
+  updateOverviewPanel(stats);
   updateTimeline(filteredEvents);
   updateModelBreakdown(filteredEvents);
   updateAnalyticsTable(filteredEvents);
   updateModelFilter(state.allUsageData.usageEvents);
   updateResultsInfo(filteredEvents.length);
-  updateUserAnalyticsPanel();
 }
 
 /**
