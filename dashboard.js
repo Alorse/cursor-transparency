@@ -50,6 +50,11 @@ async function fetchAndDisplayData(forceRefresh = false) {
     const isConnected = await checkConnection();
     updateConnectionStatus(isConnected, isConnected ? 'Connected to Cursor.com' : 'Data loaded successfully');
 
+    if (!isConnected) {
+      showErrorState('No connection to Cursor.com. Please open a tab with cursor.com.');
+      return;
+    }
+
     // Fetch both datasets in parallel
     const usageDataPromise = fetchUsageData(forceRefresh);
     const userAnalyticsPromise = fetchUserAnalytics();

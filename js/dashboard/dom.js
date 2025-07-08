@@ -10,6 +10,10 @@ import { dom } from './state.js';
  */
 export function initDOM() {
   const elementIds = {
+    // Connection Status
+    statusIndicator: 'statusIndicator',
+    statusText: 'statusText',
+
     // States
     loadingState: 'loadingState',
     errorState: 'errorState',
@@ -50,24 +54,13 @@ export function initDOM() {
   };
 
   for (const key in elementIds) {
-    if (elementIds[key].startsWith('.')) {
-      dom[key] = document.querySelectorAll(elementIds[key]);
-    } else {
-      dom[key] = document.getElementById(elementIds[key]);
+    if (Object.prototype.hasOwnProperty.call(elementIds, key)) {
+      const selector = elementIds[key];
+      if (selector.startsWith('.')) {
+        dom[key] = document.querySelectorAll(selector);
+      } else {
+        dom[key] = document.getElementById(selector);
+      }
     }
   }
-
-  dom.lastUpdated = document.getElementById('lastUpdated');
-  dom.resultsCount = document.getElementById('resultsCount');
-  dom.timeRange = document.getElementById('timeRange');
-
-  // Overview Panel
-  dom.overviewPanel = document.getElementById('overviewPanel');
-  dom.totalCost = document.getElementById('totalCost');
-  dom.totalRequests = document.getElementById('totalRequests');
-  dom.detailedBreakdownPanel = document.getElementById('detailedBreakdownPanel');
-
-  // Timeline
-  dom.usageTimeline = document.getElementById('usageTimeline');
-  dom.sortOrder = document.getElementById('sortOrder');
 } 
