@@ -31,7 +31,7 @@ import { getModelDetails, isValidEvent } from './js/dashboard/utils.js';
  */
 async function initialize() {
   initDOM();
-  setupEventListeners(fetchAndDisplayData);
+  setupEventListeners(fetchAndDisplayData, displayData);
   
   const isConnected = await checkConnection();
   updateConnectionStatus(isConnected, isConnected ? 'Connected to Cursor.com' : 'No Cursor.com tab found');

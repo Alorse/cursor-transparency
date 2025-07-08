@@ -6,21 +6,24 @@
 import { dom, state } from './state.js';
 import { exportData } from './export.js';
 
-let refreshData = () => {};
+let fetchData = () => {};
+let renderData = () => {};
 
 /**
  * Sets up all event listeners.
- * @param {function} displayDataCallback - The function to call to refresh the data display.
+ * @param {function} fetchDataCallback - The function to call to fetch new data.
+ * @param {function} renderDataCallback - The function to call to re-render the display.
  */
-export function setupEventListeners(displayDataCallback) {
-  refreshData = displayDataCallback;
+export function setupEventListeners(fetchDataCallback, renderDataCallback) {
+  fetchData = fetchDataCallback;
+  renderData = renderDataCallback;
 
   if (dom.refreshBtn) {
-    dom.refreshBtn.addEventListener('click', () => refreshData(true));
+    dom.refreshBtn.addEventListener('click', () => fetchData(true));
   }
 
   if (dom.retryBtn) {
-    dom.retryBtn.addEventListener('click', () => refreshData());
+    dom.retryBtn.addEventListener('click', () => fetchData());
   }
 
   if (dom.openCursorBtn) {
@@ -74,51 +77,44 @@ function handleCustomDateRange() {
       to: new Date(toDate).getTime(),
     };
     dom.filterBtns.forEach(b => b.classList.remove('active'));
-    if (state.allUsageData) refreshData();
+    if (state.allUsageData) renderData();
   }
 }
 
 function handleSortChange(e) {
   state.currentSort = e.target.value;
-  if (state.allUsageData) refreshData();
+  if (state.allUsageData) renderData();
 }
 
 function handleModelViewToggle(e) {
   dom.toggleBtns.forEach(b => b.classList.remove('active'));
   e.currentTarget.classList.add('active');
   state.modelBreakdownView = e.currentTarget.dataset.view;
-  if (state.allUsageData) refreshData();
+  if (state.allUsageData) renderData();
 }
 
 function handleTimeRangeChange(e) {
   state.currentFilter = e.target.value;
   state.customDateRange = null;
   state.analyticsCurrentPage = 1; // Reset page on filter change
-  if (state.allUsageData) refreshData();
+  if (state.allUsageData) renderData();
 }
 
 function handleModelFilterChange(e) {
     state.selectedModel = e.target.value;
     state.analyticsCurrentPage = 1; // Reset page on filter change
-    if (state.allUsageData) refreshData();
+    if (state.allUsageData) renderData();
 }
 
 function handlePaginationClick(e) {
   const target = e.target.closest('.pagination-btn');
-  if (!target) return;
+  if (!target || target.disabled) return;
 
   if (target.id === 'prevPageBtn') {
-    if (state.analyticsCurrentPage > 1) {
-      state.analyticsCurrentPage--;
-      refreshData();
-    }
+    state.analyticsCurrentPage--;
+    renderData();
   } else if (target.id === 'nextPageBtn') {
-    const totalPages = Math.ceil(
-      (state.allUsageData?.usageEvents?.length || 0) / 100
-    );
-    if (state.analyticsCurrentPage < totalPages) {
-      state.analyticsCurrentPage++;
-      refreshData();
-    }
+    state.analyticsCurrentPage++;
+    renderData();
   }
 } 
