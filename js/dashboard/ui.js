@@ -244,7 +244,8 @@ export function updateModelFilter(events) {
         if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
             modelIntent += ` [${subscriptionProductId}]`;
         }
-        modelIntents.add(modelIntent);
+        if (modelIntent !== 'Unknown Model')
+          modelIntents.add(modelIntent);
     });
 
     const sortedModels = Array.from(modelIntents).sort();
