@@ -210,5 +210,27 @@ function calculateStats(events) {
   return stats;
 }
 
+/**
+ * Sets up the interactive animated logo.
+ */
+function setupAnimatedLogo() {
+  const animatedLogo = document.getElementById('animatedLogo');
+  if (animatedLogo) {
+    const video = animatedLogo.querySelector('video');
+    if (video) {
+      animatedLogo.addEventListener('mouseenter', () => {
+        video.play();
+      });
+      animatedLogo.addEventListener('mouseleave', () => {
+        video.pause();
+        video.currentTime = 0;
+      });
+    }
+  }
+}
+
 // Initialize the application when the DOM is fully loaded.
-document.addEventListener('DOMContentLoaded', initialize); 
+document.addEventListener('DOMContentLoaded', () => {
+  initialize();
+  setupAnimatedLogo();
+}); 
