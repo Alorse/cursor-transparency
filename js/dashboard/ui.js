@@ -132,19 +132,21 @@ export function updateTimeline(events) {
     const cost = event.priceCents || 0;
     const isErrored = event?.status === 'errored';
     if (isErrored) modelIntent += ' [Errored, Not Charged]';
+    const isApiKey = subscriptionProductId === 'api-key';
+
     return `
       <div class="timeline-event${isErrored ? ' errored-bg' : ''}">
         <div class="event-header">
           <span class="event-model">${modelIntent}</span>
           <span class="event-time">${formatTimestamp(timestamp)}</span>
-          <span class="event-cost">$${(cost / 100).toFixed(3)}</span>
+          <span class="event-cost">${isApiKey ? '-' : `$${(cost / 100).toFixed(3)}`}</span>
         </div>
         ${tokenUsage ? `
           <div class="event-details">
-            <div class="event-detail"><strong>${formatNumber(tokenUsage.inputTokens || 0)}</strong> input tokens</div>
-            <div class="event-detail"><strong>${formatNumber(tokenUsage.outputTokens || 0)}</strong> output tokens</div>
-            <div class="event-detail"><strong>${formatNumber(tokenUsage.cacheReadTokens || 0)}</strong> cache read</div>
-            <div class="event-detail"><strong>${formatNumber(tokenUsage.cacheWriteTokens || 0)}</strong> cache write</div>
+            <div class="event-detail"><strong>${isApiKey ? '-' : formatNumber(tokenUsage.inputTokens || 0)}</strong> input tokens</div>
+            <div class="event-detail"><strong>${isApiKey ? '-' : formatNumber(tokenUsage.outputTokens || 0)}</strong> output tokens</div>
+            <div class="event-detail"><strong>${isApiKey ? '-' : formatNumber(tokenUsage.cacheReadTokens || 0)}</strong> cache read</div>
+            <div class="event-detail"><strong>${isApiKey ? '-' : formatNumber(tokenUsage.cacheWriteTokens || 0)}</strong> cache write</div>
           </div>
         ` : '<div class="event-details"><div class="event-detail">No token data available</div></div>'}
       </div>`;
@@ -312,15 +314,16 @@ export function updateAnalyticsTable(events) {
     const cost = event.priceCents || 0;
     const isErrored = event?.status === 'errored';
     if (isErrored) modelIntent += ' [Errored, Not Charged]';
+    const isApiKey = subscriptionProductId === 'api-key';
     return `
       <tr${isErrored ? ' class="errored-bg"' : ''}>
         <td>${timestamp.toLocaleString()}</td>
         <td>${modelIntent}</td>
-        <td>${(cost / 100).toFixed(3)}</td>
-        <td>${formatNumber(tokenUsage?.inputTokens || 0)}</td>
-        <td>${formatNumber(tokenUsage?.outputTokens || 0)}</td>
-        <td>${formatNumber(tokenUsage?.cacheReadTokens || 0)}</td>
-        <td>${formatNumber(tokenUsage?.cacheWriteTokens || 0)}</td>
+        <td>${isApiKey ? '-' : (cost / 100).toFixed(3)}</td>
+        <td>${isApiKey ? '-' : formatNumber(tokenUsage?.inputTokens || 0)}</td>
+        <td>${isApiKey ? '-' : formatNumber(tokenUsage?.outputTokens || 0)}</td>
+        <td>${isApiKey ? '-' : formatNumber(tokenUsage?.cacheReadTokens || 0)}</td>
+        <td>${isApiKey ? '-' : formatNumber(tokenUsage?.cacheWriteTokens || 0)}</td>
       </tr>`;
   }).join('');
 
