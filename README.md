@@ -6,8 +6,6 @@ A Chrome extension that provides detailed analytics and usage tracking for your 
 
 ![Dashboard Overview](./screenshots/screenshot1.png)
 
-![Detailed Analytics Table](./screenshots/screenshot2.png)
-
 ## Features
 
 🔍 **Detailed Usage Analytics**
@@ -39,13 +37,6 @@ A Chrome extension that provides detailed analytics and usage tracking for your 
 1. **Download the Extension Files**
 
    - Clone or download this repository
-   - Ensure all files are in a single directory:
-     - `manifest.json`
-     - `background.js`
-     - `content.js`
-     - `popup.html`
-     - `popup.css`
-     - `popup.js`
 
 2. **Enable Developer Mode in Chrome**
 
