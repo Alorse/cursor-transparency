@@ -400,12 +400,22 @@ export function updateUserAnalyticsPanel() {
     }, { linesAdded: 0, linesDeleted: 0, totalTabsShown: 0, totalTabsAccepted: 0 });
 
     panel.innerHTML = `
-    <div class="stat-card">
-      <div class="model-stats">
-        <div class="model-stat"><span class="stat-value-small">${formatNumber(sums.linesAdded)}</span> Lines Added</div>
-        <div class="model-stat"><span class="stat-value-small">${formatNumber(sums.linesDeleted)}</span> Lines Deleted</div>
-        <div class="model-stat"><span class="stat-value-small">${formatNumber(sums.totalTabsShown)}</span> Tabs Shown</div>
-        <div class="model-stat"><span class="stat-value-small">${formatNumber(sums.totalTabsAccepted)}</span> Tabs Accepted</div>
+    <div class="model-stats">
+      <div class="model-stat">
+        <span class="stat-value-small">${formatNumber(sums.linesAdded)}</span>
+        <span>Lines Added</span>
+      </div>
+      <div class="model-stat">
+        <span class="stat-value-small">${formatNumber(sums.linesDeleted)}</span>
+        <span>Lines Deleted</span>
+      </div>
+      <div class="model-stat">
+        <span class="stat-value-small">${formatNumber(sums.totalTabsShown)}</span>
+        <span>Tabs Shown</span>
+      </div>
+      <div class="model-stat">
+        <span class="stat-value-small">${formatNumber(sums.totalTabsAccepted)}</span>
+        <span>Tabs Accepted</span>
       </div>
     </div>`;
 }
