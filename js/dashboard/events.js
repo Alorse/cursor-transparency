@@ -55,6 +55,10 @@ export function setupEventListeners(displayDataCallback) {
     dom.timeRangeDropdown.addEventListener('change', handleTimeRangeChange);
   }
 
+  if (dom.modelFilter) {
+    dom.modelFilter.addEventListener('change', handleModelFilterChange);
+  }
+
   // Event delegation for pagination
   if (dom.paginationContainer) {
     dom.paginationContainer.addEventListener('click', handlePaginationClick);
@@ -91,6 +95,12 @@ function handleTimeRangeChange(e) {
   state.customDateRange = null;
   state.analyticsCurrentPage = 1; // Reset page on filter change
   if (state.allUsageData) refreshData();
+}
+
+function handleModelFilterChange(e) {
+    state.selectedModel = e.target.value;
+    state.analyticsCurrentPage = 1; // Reset page on filter change
+    if (state.allUsageData) refreshData();
 }
 
 function handlePaginationClick(e) {

@@ -9,6 +9,7 @@ export const state = {
   customDateRange: null,
   currentSort: 'newest',
   modelBreakdownView: 'cost',
+  selectedModel: 'all',
   userAnalyticsData: null,
   analyticsCurrentPage: 1,
 };

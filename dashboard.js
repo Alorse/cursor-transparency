@@ -19,6 +19,7 @@ import {
   updateTimeline,
   updateModelBreakdown,
   updateAnalyticsTable,
+  updateModelFilter,
   updateResultsInfo,
   updateUserAnalyticsPanel
 } from './js/dashboard/ui.js';
@@ -80,6 +81,7 @@ function displayData() {
   updateTimeline(filteredEvents);
   updateModelBreakdown(filteredEvents);
   updateAnalyticsTable(filteredEvents);
+  updateModelFilter(state.allUsageData.usageEvents);
   updateResultsInfo(filteredEvents.length);
   updateUserAnalyticsPanel();
 }

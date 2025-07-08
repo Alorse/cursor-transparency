@@ -229,6 +229,37 @@ export function updateModelBreakdown(events) {
 }
 
 /**
+ * Populates the model filter dropdown with available models.
+ * @param {Array<object>} events - The usage events.
+ */
+export function updateModelFilter(events) {
+    const modelIntents = new Set();
+    events.forEach(event => {
+        const details = getModelDetails(event.details);
+        let modelIntent = details?.modelIntent || 'Unknown Model';
+        if (modelIntent === 'default') modelIntent = 'Auto';
+        const subscriptionProductId = event.subscriptionProductId;
+        if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
+            modelIntent += ` [${subscriptionProductId}]`;
+        }
+        modelIntents.add(modelIntent);
+    });
+
+    const sortedModels = Array.from(modelIntents).sort();
+    const currentSelection = dom.modelFilter.value;
+
+    dom.modelFilter.innerHTML = '<option value="all">All Models</option>';
+    sortedModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        dom.modelFilter.appendChild(option);
+    });
+
+    dom.modelFilter.value = currentSelection;
+}
+
+/**
  * Renders the detailed analytics table with pagination.
  * @param {Array<object>} events - The usage events.
  */
@@ -246,7 +277,22 @@ export function updateAnalyticsTable(events) {
     return;
   }
 
-  const sortedEvents = [...events].sort((a, b) => parseInt(b.timestamp) - parseInt(a.timestamp));
+  // Filter by model if a specific model is selected
+  const modelFilteredEvents = state.selectedModel === 'all'
+    ? events
+    : events.filter(event => {
+        const details = getModelDetails(event.details);
+        let modelIntent = details?.modelIntent || 'Unknown Model';
+        if (modelIntent === 'default') modelIntent = 'Auto';
+        const subscriptionProductId = event.subscriptionProductId;
+        if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
+            modelIntent += ` [${subscriptionProductId}]`;
+        }
+        return modelIntent === state.selectedModel;
+    });
+
+  // Sort by timestamp (newest first)
+  const sortedEvents = [...modelFilteredEvents].sort((a, b) => parseInt(b.timestamp) - parseInt(a.timestamp));
   const totalPages = Math.ceil(sortedEvents.length / constants.ANALYTICS_PAGE_SIZE);
   if (state.analyticsCurrentPage > totalPages) state.analyticsCurrentPage = totalPages || 1;
 
