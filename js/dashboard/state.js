@@ -17,6 +17,6 @@ export const state = {
 export const dom = {};
 
 export const constants = {
-  ANALYTICS_PAGE_SIZE: 100,
-  TIMELINE_EVENT_LIMIT: 50,
+  ANALYTICS_PAGE_SIZE: 50,
+  TIMELINE_EVENT_LIMIT: 20,
 }; 

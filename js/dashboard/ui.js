@@ -114,27 +114,6 @@ export function updateOverviewPanel(stats) {
   // Render detailed breakdown panel
   dom.detailedBreakdownPanel.innerHTML = `
     <div class="breakdown-group">
-      <h3 class="breakdown-group-title">Token Usage</h3>
-      <div class="breakdown-grid">
-        <div class="breakdown-item">
-          <span class="breakdown-value">${formatNumber(stats.totalInputTokens)}</span>
-          <span class="breakdown-label">Input Tokens</span>
-        </div>
-        <div class="breakdown-item">
-          <span class="breakdown-value">${formatNumber(stats.totalOutputTokens)}</span>
-          <span class="breakdown-label">Output Tokens</span>
-        </div>
-        <div class="breakdown-item">
-          <span class="breakdown-value">${formatNumber(stats.totalCacheReadTokens)}</span>
-          <span class="breakdown-label">Cache Read</span>
-        </div>
-        <div class="breakdown-item">
-          <span class="breakdown-value">${formatNumber(stats.totalCacheWriteTokens)}</span>
-          <span class="breakdown-label">Cache Write</span>
-        </div>
-      </div>
-    </div>
-    <div class="breakdown-group">
       <h3 class="breakdown-group-title">User Activity</h3>
       <div class="breakdown-grid">
         <div class="breakdown-item">
@@ -155,7 +134,27 @@ export function updateOverviewPanel(stats) {
         </div>
       </div>
     </div>
-  `;
+    <div class="breakdown-group">
+      <h3 class="breakdown-group-title">Token Usage</h3>
+      <div class="breakdown-grid">
+        <div class="breakdown-item">
+          <span class="breakdown-value">${formatNumber(stats.totalInputTokens)}</span>
+          <span class="breakdown-label">Input Tokens</span>
+        </div>
+        <div class="breakdown-item">
+          <span class="breakdown-value">${formatNumber(stats.totalOutputTokens)}</span>
+          <span class="breakdown-label">Output Tokens</span>
+        </div>
+        <div class="breakdown-item">
+          <span class="breakdown-value">${formatNumber(stats.totalCacheReadTokens)}</span>
+          <span class="breakdown-label">Cache Read</span>
+        </div>
+        <div class="breakdown-item">
+          <span class="breakdown-value">${formatNumber(stats.totalCacheWriteTokens)}</span>
+          <span class="breakdown-label">Cache Write</span>
+        </div>
+      </div>
+    </div>`;
 }
 
 /**
