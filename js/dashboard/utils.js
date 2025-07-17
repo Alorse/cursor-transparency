@@ -41,16 +41,17 @@ export function formatTimestamp(date) {
  * @returns {object} The nested details object.
  */
 export function getModelDetails(eventDetails) {
-  const validTypes = ['toolCallComposer', 'composer', 'fastApply', 'chat', 'cmdK'];
-  let nestedDetails = {};
+  // console.log('eventDetails', eventDetails);
+  // const validTypes = ['toolCallComposer', 'composer', 'fastApply', 'chat', 'cmdK'];
+  // let nestedDetails = {};
 
-  for (const validType of validTypes) {
-    if (eventDetails[validType]) {
-      nestedDetails = eventDetails[validType];
-      break;
-    }
-  }
-  return nestedDetails;
+  // for (const validType of validTypes) {
+  //   if (eventDetails[validType]) {
+  //     nestedDetails = eventDetails[validType];
+  //     break;
+  //   }
+  // }
+  return eventDetails;
 }
 
 /**
@@ -59,7 +60,8 @@ export function getModelDetails(eventDetails) {
  * @returns {boolean} True if the event is valid, false otherwise.
  */
 export function isValidEvent(event) {
-  const details = getModelDetails(event.details);
+  // console.log("isValidEvent", event);
+  const details = getModelDetails(event);
   const isEmptyDetails = !details || Object.keys(details).length === 0;
-  return !(isEmptyDetails && (event.priceCents === 0));
+  return !(isEmptyDetails && (event.requestsCosts === 0));
 } 

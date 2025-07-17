@@ -79,19 +79,18 @@ async function fetchAndDisplayData(forceRefresh = false) {
  * Filters and displays the data based on the current settings.
  */
 function displayData() {
-  if (!state.allUsageData || !state.allUsageData.usageEvents) {
+  if (!state.allUsageData || !state.allUsageData.usageEventsDisplay) {
     showErrorState('No usage data available');
     return;
   }
-  
-  const filteredEvents = filterEvents(state.allUsageData.usageEvents).filter(isValidEvent);
+  const filteredEvents = filterEvents(state.allUsageData.usageEventsDisplay).filter(isValidEvent);
   const stats = calculateStats(filteredEvents);
   
   updateOverviewPanel(stats);
   updateTimeline(filteredEvents);
-  updateModelBreakdown(filteredEvents);
+  updateModelBreakdown(state.allUsageData);
   updateAnalyticsTable(filteredEvents);
-  updateModelFilter(state.allUsageData.usageEvents);
+  updateModelFilter(state.allUsageData.usageEventsDisplay);
   updateResultsInfo(filteredEvents.length);
 }
 
@@ -104,12 +103,12 @@ function filterEvents(events) {
   const now = Date.now();
   let startTime = 0;
   let endTime = now;
-
+  
   const maxEventTime = Math.max(...events.map(e => parseInt(e.timestamp)));
   const hasFutureTimestamps = maxEventTime > now;
-
+  
   const referenceTime = hasFutureTimestamps ? maxEventTime : now;
-
+  
   if (state.customDateRange) {
     startTime = state.customDateRange.from;
     endTime = state.customDateRange.to;
@@ -172,7 +171,7 @@ function calculateStats(events) {
   };
 
   events.forEach(event => {
-    const subscriptionProductId = event.subscriptionProductId || 'unknown';
+    const subscriptionProductId = event.model || 'unknown';
     if (!stats.bySubscription[subscriptionProductId]) {
       stats.bySubscription[subscriptionProductId] = {
         totalCents: 0, totalInputTokens: 0, totalOutputTokens: 0,
@@ -180,10 +179,10 @@ function calculateStats(events) {
       };
     }
     const subStats = stats.bySubscription[subscriptionProductId];
-    subStats.totalCents += event.priceCents || 0;
+    subStats.totalCents += event.requestsCosts || 0;
     subStats.totalRequests += 1;
     
-    const details = getModelDetails(event.details);
+    const details = getModelDetails(event);
     const tokenUsage = details?.tokenUsage;
     if (tokenUsage) {
       subStats.totalInputTokens += tokenUsage.inputTokens || 0;
@@ -201,6 +200,15 @@ function calculateStats(events) {
     stats.totalCacheWriteTokens += subStats.totalCacheWriteTokens;
     stats.totalRequests += subStats.totalRequests;
   });
+
+  // Overwrite the totalCents with the value of aggregations if available
+  if (state.allUsageData && state.allUsageData.aggregations) {
+    let totalCentsFromAggregations = 0;
+    state.allUsageData.aggregations.forEach(agg => {
+      totalCentsFromAggregations += agg.totalCents || 0;
+    });
+    stats.totalCents = totalCentsFromAggregations;
+  }
 
   if (stats.totalRequests > 0) {
     stats.averageCostPerRequest = stats.totalCents / stats.totalRequests;

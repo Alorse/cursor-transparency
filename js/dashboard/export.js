@@ -30,16 +30,12 @@ export function exportData(format) {
 function convertToCSV(events) {
   const headers = ['Timestamp', 'Model', 'Cost', 'Input Tokens', 'Output Tokens', 'Cache Read Tokens', 'Cache Write Tokens'];
   const rows = events.map(event => {
-    const details = getModelDetails(event.details);
+    const details = getModelDetails(event);
     const tokenUsage = details?.tokenUsage;
-    let modelIntent = details?.modelIntent || 'Unknown';
+    let modelIntent = details?.model || 'Unknown';
     if (modelIntent === 'default') modelIntent = 'Auto';
-    const subscriptionProductId = event.subscriptionProductId;
-    if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
-      modelIntent += ` - [${subscriptionProductId}]`;
-    }
     const timestamp = new Date(parseInt(event.timestamp)).toISOString();
-    const cost = (event.priceCents || 0) / 100;
+    const cost = (event.requestsCosts || 0) / 100;
 
     return [
       timestamp,

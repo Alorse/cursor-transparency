@@ -175,8 +175,8 @@ export function updateTimeline(events) {
     switch (state.currentSort) {
       case 'newest': return parseInt(b.timestamp) - parseInt(a.timestamp);
       case 'oldest': return parseInt(a.timestamp) - parseInt(b.timestamp);
-      case 'cost-high': return (b.priceCents || 0) - (a.priceCents || 0);
-      case 'cost-low': return (a.priceCents || 0) - (b.priceCents || 0);
+      case 'cost-high': return (b.requestsCosts || 0) - (a.requestsCosts || 0);
+      case 'cost-low': return (a.requestsCosts || 0) - (b.requestsCosts || 0);
       default: return parseInt(b.timestamp) - parseInt(a.timestamp);
     }
   });
@@ -184,19 +184,15 @@ export function updateTimeline(events) {
   const displayEvents = sortedEvents.slice(0, constants.TIMELINE_EVENT_LIMIT);
 
   dom.usageTimeline.innerHTML = displayEvents.map(event => {
-    const details = getModelDetails(event.details);
+    const details = getModelDetails(event);
     const tokenUsage = details?.tokenUsage || {};
-    let modelIntent = details?.modelIntent || 'Unknown Model';
+    let modelIntent = details?.model || '1111Unknown Model';
     if (modelIntent === 'default') modelIntent = 'Auto';
-    const subscriptionProductId = event.subscriptionProductId;
-    if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
-      modelIntent += ` [${subscriptionProductId}]`;
-    }
     const timestamp = new Date(parseInt(event.timestamp));
-    const cost = event.priceCents || 0;
+    const cost = event.requestsCosts || 0;
     const isErrored = event?.status === 'errored';
     if (isErrored) modelIntent += ' [Errored, Not Charged]';
-    const isApiKey = subscriptionProductId === 'api-key';
+    const isApiKey = false;
 
     return `
       <div class="timeline-event${isErrored ? ' errored-bg' : ''}">
@@ -231,16 +227,12 @@ export function updateTimeline(events) {
 export function updateModelBreakdown(events) {
   const modelStats = {};
 
-  events.forEach(event => {
-    const details = getModelDetails(event.details);
+  events.usageEventsDisplay.forEach(event => {
+    const details = getModelDetails(event);
     const tokenUsage = details?.tokenUsage || {};
-    let modelIntent = details?.modelIntent || 'Unknown Model';
+    let modelIntent = details?.model || 'Unknown Model';
     if (modelIntent === 'default') modelIntent = 'Auto';
-    const subscriptionProductId = event.subscriptionProductId;
-    if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
-      modelIntent += ` [${subscriptionProductId}]`;
-    }
-    const cost = event.priceCents || 0;
+    const cost = event.requestsCosts || 0;
 
     if (!modelStats[modelIntent]) {
       modelStats[modelIntent] = {
@@ -261,6 +253,17 @@ export function updateModelBreakdown(events) {
       modelStats[modelIntent].totalCacheReadTokens += tokenUsage.cacheReadTokens || 0;
     }
   });
+
+  // Overwrite the totalCents with the value of aggregations if available
+  if (state.allUsageData && state.allUsageData.aggregations) {
+    state.allUsageData.aggregations.forEach(agg => {
+      const modelIntent = agg.modelIntent || 'Unknown Model';
+      if (modelStats[modelIntent]) {
+        // Overwrite the totalCents with the value of aggregations
+        modelStats[modelIntent].totalCents = agg.totalCents || 0;
+      }
+    });
+  }
 
   const sortedModels = Object.entries(modelStats).sort(([, a], [, b]) => {
     if (state.modelBreakdownView === 'cost') {
@@ -301,13 +304,9 @@ export function updateModelBreakdown(events) {
 export function updateModelFilter(events) {
     const modelIntents = new Set();
     events.forEach(event => {
-        const details = getModelDetails(event.details);
-        let modelIntent = details?.modelIntent || 'Unknown Model';
+        const details = getModelDetails(event);
+        let modelIntent = details?.model || 'Unknown Model';
         if (modelIntent === 'default') modelIntent = 'Auto';
-        const subscriptionProductId = event.subscriptionProductId;
-        if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
-            modelIntent += ` [${subscriptionProductId}]`;
-        }
         if (modelIntent !== 'Unknown Model')
           modelIntents.add(modelIntent);
     });
@@ -348,13 +347,9 @@ export function updateAnalyticsTable(events) {
   const modelFilteredEvents = state.selectedModel === 'all'
     ? events
     : events.filter(event => {
-        const details = getModelDetails(event.details);
-        let modelIntent = details?.modelIntent || 'Unknown Model';
+        const details = getModelDetails(event);
+        let modelIntent = details?.model || 'Unknown Model';
         if (modelIntent === 'default') modelIntent = 'Auto';
-        const subscriptionProductId = event.subscriptionProductId;
-        if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
-            modelIntent += ` [${subscriptionProductId}]`;
-        }
         return modelIntent === state.selectedModel;
     });
 
@@ -367,16 +362,13 @@ export function updateAnalyticsTable(events) {
   const paginatedEvents = sortedEvents.slice(startIndex, startIndex + constants.ANALYTICS_PAGE_SIZE);
 
   tbody.innerHTML = paginatedEvents.map(event => {
-    const details = getModelDetails(event.details);
+    const details = getModelDetails(event);
     const tokenUsage = details?.tokenUsage;
-    let modelIntent = details?.modelIntent || 'Unknown';
+    let modelIntent = details?.model || 'Unknown';
     if (modelIntent === 'default') modelIntent = 'Auto';
-    const subscriptionProductId = event.subscriptionProductId;
-    if (subscriptionProductId && subscriptionProductId !== 'pro-legacy') {
-      modelIntent += ` [${subscriptionProductId}]`;
-    }
+    const subscriptionProductId = event.model;
     const timestamp = new Date(parseInt(event.timestamp));
-    const cost = event.priceCents || 0;
+    const cost = event.requestsCosts || 0;
     const isErrored = event?.status === 'errored';
     if (isErrored) modelIntent += ' [Errored, Not Charged]';
     const isApiKey = subscriptionProductId === 'api-key';
