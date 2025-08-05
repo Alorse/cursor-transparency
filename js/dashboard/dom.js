@@ -45,8 +45,7 @@ export function initDOM() {
     modelBreakdown: 'modelBreakdown',
     
     // Analytics
-    exportCsv: 'exportCsv',
-    exportJson: 'exportJson',
+
     analyticsTable: 'analyticsTable',
     modelFilter: 'modelFilter',
     paginationContainer: 'paginationContainer',

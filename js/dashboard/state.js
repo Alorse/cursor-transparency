@@ -4,13 +4,12 @@
  */
 
 export const state = {
-  allUsageData: null,
+  userAnalyticsData: null,
   currentFilter: 'all',
   customDateRange: null,
   currentSort: 'newest',
   modelBreakdownView: 'cost',
   selectedModel: 'all',
-  userAnalyticsData: null,
   analyticsCurrentPage: 1,
 };
 

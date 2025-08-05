@@ -8,7 +8,7 @@
 import { state } from './js/dashboard/state.js';
 import { initDOM } from './js/dashboard/dom.js';
 import { setupEventListeners } from './js/dashboard/events.js';
-import { checkConnection, fetchUsageData, fetchUserAnalytics } from './js/dashboard/api.js';
+import { checkConnection, fetchAnalyticsData } from './js/dashboard/api.js';
 import { 
   showLoadingState, 
   showErrorState, 
@@ -22,7 +22,7 @@ import {
   updateModelFilter,
   updateResultsInfo,
 } from './js/dashboard/ui.js';
-import { getModelDetails, isValidEvent } from './js/dashboard/utils.js';
+import { isValidEvent } from './js/dashboard/utils.js';
 
 /**
  * Initializes the dashboard by setting up event listeners, fetching initial data,
@@ -55,20 +55,16 @@ async function fetchAndDisplayData(forceRefresh = false) {
       return;
     }
 
-    // Fetch both datasets in parallel
-    const usageDataPromise = fetchUsageData(forceRefresh);
-    const userAnalyticsPromise = fetchUserAnalytics();
+    // Fetch analytics data
+    const userAnalyticsData = await fetchAnalyticsData(forceRefresh);
     
-    const [usageData, userAnalyticsData] = await Promise.all([usageDataPromise, userAnalyticsPromise]);
-    
-    state.allUsageData = usageData;
     state.userAnalyticsData = userAnalyticsData;
 
     displayData();
     showMainContent();
     updateLastUpdated();
   } catch (error) {
-    console.error('Error fetching usage data:', error);
+    console.error('Error fetching analytics data:', error);
     const isConnected = await checkConnection();
     updateConnectionStatus(isConnected, isConnected ? 'Connected to Cursor.com' : 'No Cursor.com tab found');
     showErrorState(error.message);
@@ -79,8 +75,8 @@ async function fetchAndDisplayData(forceRefresh = false) {
  * Filters and displays the data based on the current settings.
  */
 function displayData() {
-  if (!state.allUsageData || !state.userAnalyticsData.usageEventsDisplay) {
-    showErrorState('No usage data available');
+  if (!state.userAnalyticsData || !state.userAnalyticsData.usageEventsDisplay) {
+    showErrorState('No analytics data available');
     return;
   }
   const filteredEvents = filterEvents(state.userAnalyticsData.usageEventsDisplay).filter(isValidEvent);
@@ -88,7 +84,7 @@ function displayData() {
   
   updateOverviewPanel(stats);
   updateTimeline(filteredEvents);
-  updateModelBreakdown(state.allUsageData);
+  updateModelBreakdown(state.userAnalyticsData);
   updateAnalyticsTable(filteredEvents);
   updateModelFilter(state.userAnalyticsData.usageEventsDisplay);
   updateResultsInfo(filteredEvents.length);
@@ -179,11 +175,10 @@ function calculateStats(events) {
       };
     }
     const subStats = stats.bySubscription[subscriptionProductId];
-    subStats.totalCents += event.requestsCosts || 0;
+    subStats.totalCents += event.tokenUsage.totalCents || 0;
     subStats.totalRequests += 1;
     
-    const details = getModelDetails(event);
-    const tokenUsage = details?.tokenUsage;
+    const tokenUsage = event?.tokenUsage;
     if (tokenUsage) {
       subStats.totalInputTokens += tokenUsage.inputTokens || 0;
       subStats.totalOutputTokens += tokenUsage.outputTokens || 0;
@@ -200,15 +195,6 @@ function calculateStats(events) {
     stats.totalCacheWriteTokens += subStats.totalCacheWriteTokens;
     stats.totalRequests += subStats.totalRequests;
   });
-
-  // Overwrite the totalCents with the value of aggregations if available
-  if (state.allUsageData && state.allUsageData.aggregations) {
-    let totalCentsFromAggregations = 0;
-    state.allUsageData.aggregations.forEach(agg => {
-      totalCentsFromAggregations += agg.totalCents || 0;
-    });
-    stats.totalCents = totalCentsFromAggregations;
-  }
 
   if (stats.totalRequests > 0) {
     stats.averageCostPerRequest = stats.totalCents / stats.totalRequests;

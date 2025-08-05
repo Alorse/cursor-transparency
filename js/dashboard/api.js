@@ -18,54 +18,39 @@ export async function checkConnection() {
 }
 
 /**
- * Fetches usage data from the background script.
+ * Fetches user analytics data from the background script.
  * @param {boolean} forceRefresh - If true, clears the cache before fetching.
- * @returns {Promise<object>} A promise that resolves with the usage data.
+ * @returns {Promise<object>} A promise that resolves with the user analytics data.
  */
-export async function fetchUsageData(forceRefresh = false) {
+export async function fetchAnalyticsData(forceRefresh = false) {
   if (forceRefresh) {
     await new Promise(resolve => {
       chrome.runtime.sendMessage({ action: 'clearCache' }, resolve);
     });
   }
 
+  const now = Date.now();
+  const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+  const params = {
+    teamId: 0,
+    userId: 0,
+    startDate: String(thirtyDaysAgo),
+    endDate: String(now),
+    page: 1,
+    pageSize: 1000,
+  };
+
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       reject(new Error('Request timed out. Please make sure you have cursor.com open in a tab and are logged in.'));
     }, 10000);
 
-    chrome.runtime.sendMessage({ action: 'fetchUsageData' }, (response) => {
+    chrome.runtime.sendMessage({ action: 'fetchUserAnalytics', params }, (response) => {
       clearTimeout(timeout);
       if (response && response.success) {
         resolve(response.data);
       } else {
-        reject(new Error(response?.error || 'Failed to fetch data'));
-      }
-    });
-  });
-}
-
-/**
- * Fetches user analytics data from the background script.
- * @returns {Promise<object>} A promise that resolves with the user analytics data.
- */
-export async function fetchUserAnalytics() {
-    const now = Date.now();
-    const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
-    const params = {
-      teamId: 0,
-      userId: 0,
-      startDate: String(thirtyDaysAgo),
-      endDate: String(now)
-    };
-
-  return new Promise(resolve => {
-    chrome.runtime.sendMessage({ action: 'fetchUserAnalytics', params }, (response) => {
-      if (response.success) {
-        resolve(response.data);
-      } else {
-        console.error('Failed to fetch user analytics:', response.error);
-        resolve(null);
+        reject(new Error(response?.error || 'Failed to fetch analytics data'));
       }
     });
   });

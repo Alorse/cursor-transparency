@@ -4,7 +4,7 @@
  */
 
 import { dom, state, constants } from './state.js';
-import { formatNumber, formatTimestamp, getModelDetails } from './utils.js';
+import { formatNumber, formatTimestamp } from './utils.js';
 
 /**
  * Shows the loading state and hides other content.
@@ -175,8 +175,8 @@ export function updateTimeline(events) {
     switch (state.currentSort) {
       case 'newest': return parseInt(b.timestamp) - parseInt(a.timestamp);
       case 'oldest': return parseInt(a.timestamp) - parseInt(b.timestamp);
-      case 'cost-high': return (b.requestsCosts || 0) - (a.requestsCosts || 0);
-      case 'cost-low': return (a.requestsCosts || 0) - (b.requestsCosts || 0);
+      case 'cost-high': return (b.tokenUsage.totalCents || 0) - (a.tokenUsage.totalCents || 0);
+      case 'cost-low': return (a.tokenUsage.totalCents || 0) - (b.tokenUsage.totalCents || 0);
       default: return parseInt(b.timestamp) - parseInt(a.timestamp);
     }
   });
@@ -184,12 +184,11 @@ export function updateTimeline(events) {
   const displayEvents = sortedEvents.slice(0, constants.TIMELINE_EVENT_LIMIT);
 
   dom.usageTimeline.innerHTML = displayEvents.map(event => {
-    const details = getModelDetails(event);
-    const tokenUsage = details?.tokenUsage || {};
-    let modelIntent = details?.model || '1111Unknown Model';
+    const tokenUsage = event?.tokenUsage || {};
+    let modelIntent = event?.model || 'Unknown Model';
     if (modelIntent === 'default') modelIntent = 'Auto';
     const timestamp = new Date(parseInt(event.timestamp));
-    const cost = event.requestsCosts || 0;
+    const cost = event.tokenUsage.totalCents || 0;
     const isErrored = event?.status === 'errored';
     if (isErrored) modelIntent += ' [Errored, Not Charged]';
     const isApiKey = false;
@@ -224,16 +223,24 @@ export function updateTimeline(events) {
  * Renders the model usage breakdown.
  * @param {Array<object>} events - The usage events.
  */
-export function updateModelBreakdown(events) {
+export function updateModelBreakdown(userAnalyticsData) {
   const modelStats = {};
-  console.log('events', events);
+  console.log('userAnalyticsData', userAnalyticsData);
 
-  events.usageEvents.forEach(event => {
-    const details = getModelDetails(event);
-    const tokenUsage = details?.tokenUsage || {};
-    let modelIntent = details?.model || 'Unknown Model';
+  if (!userAnalyticsData || !userAnalyticsData.usageEventsDisplay) {
+    dom.modelBreakdown.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🤖</div>
+        <p>No model usage data available</p>
+      </div>`;
+    return;
+  }
+
+  userAnalyticsData.usageEventsDisplay.forEach(event => {
+    const tokenUsage = event?.tokenUsage || {};
+    let modelIntent = event?.model || 'Unknown Model';
     if (modelIntent === 'default') modelIntent = 'Auto';
-    const cost = event.priceCents || 0;
+    const cost = event.tokenUsage.totalCents || 0;
 
     if (!modelStats[modelIntent]) {
       modelStats[modelIntent] = {
@@ -255,16 +262,7 @@ export function updateModelBreakdown(events) {
     }
   });
 
-  // Overwrite the totalCents with the value of aggregations if available
-  if (state.allUsageData && state.allUsageData.aggregations) {
-    state.allUsageData.aggregations.forEach(agg => {
-      const modelIntent = agg.modelIntent || 'Unknown Model';
-      if (modelStats[modelIntent]) {
-        // Overwrite the totalCents with the value of aggregations
-        modelStats[modelIntent].totalCents = agg.totalCents || 0;
-      }
-    });
-  }
+
 
   const sortedModels = Object.entries(modelStats).sort(([, a], [, b]) => {
     if (state.modelBreakdownView === 'cost') {
@@ -305,8 +303,7 @@ export function updateModelBreakdown(events) {
 export function updateModelFilter(events) {
     const modelIntents = new Set();
     events.forEach(event => {
-        const details = getModelDetails(event);
-        let modelIntent = details?.model || 'Unknown Model';
+        let modelIntent = event?.model || 'Unknown Model';
         if (modelIntent === 'default') modelIntent = 'Auto';
         if (modelIntent !== 'Unknown Model')
           modelIntents.add(modelIntent);
@@ -348,8 +345,7 @@ export function updateAnalyticsTable(events) {
   const modelFilteredEvents = state.selectedModel === 'all'
     ? events
     : events.filter(event => {
-        const details = getModelDetails(event);
-        let modelIntent = details?.model || 'Unknown Model';
+        let modelIntent = event?.model || 'Unknown Model';
         if (modelIntent === 'default') modelIntent = 'Auto';
         return modelIntent === state.selectedModel;
     });
@@ -363,13 +359,12 @@ export function updateAnalyticsTable(events) {
   const paginatedEvents = sortedEvents.slice(startIndex, startIndex + constants.ANALYTICS_PAGE_SIZE);
 
   tbody.innerHTML = paginatedEvents.map(event => {
-    const details = getModelDetails(event);
-    const tokenUsage = details?.tokenUsage;
-    let modelIntent = details?.model || 'Unknown';
+    const tokenUsage = event?.tokenUsage;
+    let modelIntent = event?.model || 'Unknown';
     if (modelIntent === 'default') modelIntent = 'Auto';
     const subscriptionProductId = event.model;
     const timestamp = new Date(parseInt(event.timestamp));
-    const cost = event.requestsCosts || 0;
+    const cost = event.tokenUsage.totalCents || 0;
     const isErrored = event?.status === 'errored';
     if (isErrored) modelIntent += ' [Errored, Not Charged]';
     const isApiKey = subscriptionProductId === 'api-key';
@@ -449,8 +444,8 @@ function getCurrentDateRange() {
   let startTime = 0;
   let endTime = now;
 
-  if (state.allUsageData && state.allUsageData.usageEvents) {
-    const maxEventTime = Math.max(...state.allUsageData.usageEvents.map(e => parseInt(e.timestamp)));
+  if (state.userAnalyticsData && state.userAnalyticsData.usageEventsDisplay) {
+    const maxEventTime = Math.max(...state.userAnalyticsData.usageEventsDisplay.map(e => parseInt(e.timestamp)));
     if (maxEventTime > now) endTime = maxEventTime;
   }
 

@@ -1,6 +1,6 @@
 # Cursor Usage Tracker Chrome Extension
 
-A Chrome extension that provides detailed analytics and usage tracking for your Cursor.com account. Monitor your AI model usage, costs, and token consumption with advanced filtering options.
+A Chrome extension that provides detailed analytics and usage tracking for your Cursor.com account. Monitor your AI model usage, costs, and token consumption with advanced filtering options. Uses the analytics API for real-time usage data.
 
 ## Screenshots
 
@@ -148,9 +148,9 @@ A Chrome extension that provides detailed analytics and usage tracking for your 
 
 ### API Integration
 
-- Fetches data from `https://www.cursor.com/api/dashboard/get-monthly-invoice`
+- Fetches data from `https://www.cursor.com/api/dashboard/get-filtered-usage-events`
 - Uses existing session cookies for authentication
-- Processes usage events and token data
+- Processes usage events and token data from analytics endpoint
 
 ## Development
 

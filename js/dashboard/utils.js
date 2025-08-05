@@ -36,32 +36,11 @@ export function formatTimestamp(date) {
 }
 
 /**
- * Extracts model details from a usage event.
- * @param {object} eventDetails - The details object from the event.
- * @returns {object} The nested details object.
- */
-export function getModelDetails(eventDetails) {
-  // console.log('eventDetails', eventDetails);
-  // const validTypes = ['toolCallComposer', 'composer', 'fastApply', 'chat', 'cmdK'];
-  // let nestedDetails = {};
-
-  // for (const validType of validTypes) {
-  //   if (eventDetails[validType]) {
-  //     nestedDetails = eventDetails[validType];
-  //     break;
-  //   }
-  // }
-  return eventDetails;
-}
-
-/**
  * Checks if a usage event is valid for display.
  * @param {object} event - The usage event.
  * @returns {boolean} True if the event is valid, false otherwise.
  */
 export function isValidEvent(event) {
-  // console.log("isValidEvent", event);
-  const details = getModelDetails(event);
-  const isEmptyDetails = !details || Object.keys(details).length === 0;
-  return !(isEmptyDetails && (event.requestsCosts === 0));
+  const isEmptyDetails = !event || Object.keys(event).length === 0;
+  return !(isEmptyDetails && (event.tokenUsage.totalCents === 0));
 } 

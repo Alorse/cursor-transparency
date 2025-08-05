@@ -3,8 +3,8 @@
  * Handles API requests and data caching
  */
 
-// Store usage data in memory for quick access
-let cachedUsageData = null;
+// Store analytics data in memory for quick access
+let cachedAnalyticsData = null;
 let lastFetchTime = 0;
 const CACHE_DURATION = 60000; // 1 minute cache
 const API_BASE_URL = 'https://cursor.com/api';
@@ -29,6 +29,7 @@ async function fetchFromCursorApi(endpoint, body) {
   } catch (tabError) {
     throw new Error("Cursor.com tab is not accessible. Please refresh the tab and try again.");
   }
+  console.log("fetching from cursor api", body);
   const results = await chrome.scripting.executeScript({
     target: { tabId: cursorTab.id },
     func: async (url, body) => {
@@ -50,50 +51,33 @@ async function fetchFromCursorApi(endpoint, body) {
 }
 
 /**
- * Fetch usage data from Cursor API
- * @returns {Promise<Object>} Usage data response
- */
-async function fetchUsageData() {
-  const now = Date.now();
-  if (cachedUsageData && now - lastFetchTime < CACHE_DURATION) {
-    return cachedUsageData;
-  }
-  try {
-    // Use helper for API call
-    const nowDate = new Date();
-    const currentMonth = nowDate.getMonth();
-    const currentYear = nowDate.getFullYear();
-    const requestBody = {
-      month: currentMonth,
-      year: currentYear,
-      includeUsageEvents: true,
-    };
-    const data = await fetchFromCursorApi('/dashboard/get-monthly-invoice', requestBody);
-    if (data) {
-      cachedUsageData = data;
-      lastFetchTime = now;
-      await chrome.storage.local.set({ usageData: data, lastFetch: now });
-    }
-    return data;
-  } catch (error) {
-    console.error("Failed to fetch usage data:", error);
-    const stored = await chrome.storage.local.get(["usageData", "lastFetch"]);
-    if (stored.usageData) {
-      cachedUsageData = stored.usageData;
-      lastFetchTime = stored.lastFetch;
-      return stored.usageData;
-    }
-    throw error;
-  }
-}
-
-/**
  * Fetch user analytics from Cursor API
  * @returns {Promise<Object>} Analytics data response
  */
-async function fetchUserAnalytics({ teamId = 0, userId = 0, startDate, endDate }) {
-  const events = await fetchFromCursorApi('/dashboard/get-filtered-usage-events', { teamId, userId, startDate, endDate });
-  return events;
+async function fetchAnalyticsFromAPI({ teamId = 0, userId = 0, startDate, endDate }) {
+  const now = Date.now();
+  if (cachedAnalyticsData && now - lastFetchTime < CACHE_DURATION) {
+    return cachedAnalyticsData;
+  }
+  
+  try {
+    const events = await fetchFromCursorApi('/dashboard/get-filtered-usage-events', { teamId, userId, startDate, endDate, page: 1, pageSize: 1000 });
+    if (events) {
+      cachedAnalyticsData = events;
+      lastFetchTime = now;
+      await chrome.storage.local.set({ analyticsData: events, lastFetch: now });
+    }
+    return events;
+  } catch (error) {
+    console.error("Failed to fetch analytics data:", error);
+    const stored = await chrome.storage.local.get(["analyticsData", "lastFetch"]);
+    if (stored.analyticsData) {
+      cachedAnalyticsData = stored.analyticsData;
+      lastFetchTime = stored.lastFetch;
+      return stored.analyticsData;
+    }
+    throw error;
+  }
 }
 
 /**
@@ -117,25 +101,17 @@ chrome.action.onClicked.addListener(async (tab) => {
  * Message handler for communication with dashboard
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "fetchUsageData") {
-    // Fetch data from any available cursor.com tab
-    fetchUsageData()
-      .then((data) => {
-        sendResponse({ success: true, data });
-      })
-      .catch((error) => {
-        sendResponse({
-          success: false,
-          error: error.message || "Failed to fetch data",
-        });
-      });
-
-    // Return true to indicate async response
+  console.log("request", request);
+  if (request.action === "fetchUserAnalytics") {
+    console.log("fetching analytics from API", request.params);
+    fetchAnalyticsFromAPI(request.params)
+      .then((data) => sendResponse({ success: true, data }))
+      .catch((error) => sendResponse({ success: false, error: error.message || "Failed to fetch analytics" }));
     return true;
   }
 
   if (request.action === "clearCache") {
-    cachedUsageData = null;
+    cachedAnalyticsData = null;
     lastFetchTime = 0;
     chrome.storage.local.clear();
     sendResponse({ success: true });
@@ -148,12 +124,5 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       lastChecked: Date.now(),
     });
     console.log("Login status updated:", request.isLoggedIn);
-  }
-
-  if (request.action === "fetchUserAnalytics") {
-    fetchUserAnalytics(request.params)
-      .then((data) => sendResponse({ success: true, data }))
-      .catch((error) => sendResponse({ success: false, error: error.message || "Failed to fetch analytics" }));
-    return true;
   }
 });

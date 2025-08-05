@@ -4,7 +4,6 @@
  */
 
 import { dom, state } from './state.js';
-import { exportData } from './export.js';
 
 let fetchData = () => {};
 let renderData = () => {};
@@ -44,13 +43,7 @@ export function setupEventListeners(fetchDataCallback, renderDataCallback) {
     dom.modelBreakdownSort.addEventListener('change', handleModelBreakdownSortChange);
   }
 
-  if (dom.exportCsv) {
-    dom.exportCsv.addEventListener('click', () => exportData('csv'));
-  }
 
-  if (dom.exportJson) {
-    dom.exportJson.addEventListener('click', () => exportData('json'));
-  }
 
   if (dom.timeRangeDropdown) {
     dom.timeRangeDropdown.addEventListener('change', handleTimeRangeChange);
@@ -75,31 +68,31 @@ function handleCustomDateRange() {
       to: new Date(toDate).getTime(),
     };
     dom.filterBtns.forEach(b => b.classList.remove('active'));
-    if (state.allUsageData) renderData();
+    if (state.userAnalyticsData) renderData();
   }
 }
 
 function handleSortChange(e) {
   state.currentSort = e.target.value;
-  if (state.allUsageData) renderData();
+  if (state.userAnalyticsData) renderData();
 }
 
 function handleModelBreakdownSortChange(e) {
   state.modelBreakdownView = e.target.value;
-  if (state.allUsageData) renderData();
+  if (state.userAnalyticsData) renderData();
 }
 
 function handleTimeRangeChange(e) {
   state.currentFilter = e.target.value;
   state.customDateRange = null;
   state.analyticsCurrentPage = 1; // Reset page on filter change
-  if (state.allUsageData) renderData();
+  if (state.userAnalyticsData) renderData();
 }
 
 function handleModelFilterChange(e) {
     state.selectedModel = e.target.value;
     state.analyticsCurrentPage = 1; // Reset page on filter change
-    if (state.allUsageData) renderData();
+    if (state.userAnalyticsData) renderData();
 }
 
 function handlePaginationClick(e) {

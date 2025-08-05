@@ -639,26 +639,6 @@ section {
 }
 
 /* Analytics Table */
-.export-actions {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.export-btn {
-  background: #1a1a1a; /* Fondo oscuro */
-  border: 1px solid #333333; /* Borde oscuro */
-  color: #a0aec0;
-  padding: 0.6rem 1.2rem; /* Ajustar padding */
-  border-radius: 6px;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.export-btn:hover {
-  background: #333333; /* Fondo oscuro en hover */
-  color: #e0e0e0;
-}
 
 .analytics-table-container {
   overflow-x: auto;
