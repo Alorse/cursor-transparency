@@ -226,13 +226,14 @@ export function updateTimeline(events) {
  */
 export function updateModelBreakdown(events) {
   const modelStats = {};
+  console.log('events', events);
 
-  events.usageEventsDisplay.forEach(event => {
+  events.usageEvents.forEach(event => {
     const details = getModelDetails(event);
     const tokenUsage = details?.tokenUsage || {};
     let modelIntent = details?.model || 'Unknown Model';
     if (modelIntent === 'default') modelIntent = 'Auto';
-    const cost = event.requestsCosts || 0;
+    const cost = event.priceCents || 0;
 
     if (!modelStats[modelIntent]) {
       modelStats[modelIntent] = {
@@ -335,7 +336,7 @@ export function updateAnalyticsTable(events) {
   if (events.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" style="text-align: center; padding: 2rem; color: #a0aec0;">
+        <td colspan="8" style="text-align: center; padding: 2rem; color: #a0aec0;">
           No usage events found for the selected time period
         </td>
       </tr>`;
@@ -372,15 +373,24 @@ export function updateAnalyticsTable(events) {
     const isErrored = event?.status === 'errored';
     if (isErrored) modelIntent += ' [Errored, Not Charged]';
     const isApiKey = subscriptionProductId === 'api-key';
+    
+    // Calculate total tokens
+    const inputTokens = tokenUsage?.inputTokens || 0;
+    const outputTokens = tokenUsage?.outputTokens || 0;
+    const cacheReadTokens = tokenUsage?.cacheReadTokens || 0;
+    const cacheWriteTokens = tokenUsage?.cacheWriteTokens || 0;
+    const totalTokens = inputTokens + outputTokens + cacheReadTokens + cacheWriteTokens;
+    
     return `
       <tr${isErrored ? ' class="errored-bg"' : ''}>
         <td>${timestamp.toLocaleString()}</td>
         <td>${modelIntent}</td>
         <td>${isApiKey ? '-' : (cost / 100).toFixed(3)}</td>
-        <td>${isApiKey ? '-' : formatNumber(tokenUsage?.inputTokens || 0)}</td>
-        <td>${isApiKey ? '-' : formatNumber(tokenUsage?.outputTokens || 0)}</td>
-        <td>${isApiKey ? '-' : formatNumber(tokenUsage?.cacheReadTokens || 0)}</td>
-        <td>${isApiKey ? '-' : formatNumber(tokenUsage?.cacheWriteTokens || 0)}</td>
+        <td>${isApiKey ? '-' : formatNumber(inputTokens)}</td>
+        <td>${isApiKey ? '-' : formatNumber(outputTokens)}</td>
+        <td>${isApiKey ? '-' : formatNumber(cacheReadTokens)}</td>
+        <td>${isApiKey ? '-' : formatNumber(cacheWriteTokens)}</td>
+        <td>${isApiKey ? '-' : formatNumber(totalTokens)}</td>
       </tr>`;
   }).join('');
 

@@ -28,7 +28,7 @@ export function exportData(format) {
  * @returns {string} The CSV formatted string.
  */
 function convertToCSV(events) {
-  const headers = ['Timestamp', 'Model', 'Cost', 'Input Tokens', 'Output Tokens', 'Cache Read Tokens', 'Cache Write Tokens'];
+  const headers = ['Timestamp', 'Model', 'Cost', 'Input Tokens', 'Output Tokens', 'Cache Read Tokens', 'Cache Write Tokens', 'Total Tokens'];
   const rows = events.map(event => {
     const details = getModelDetails(event);
     const tokenUsage = details?.tokenUsage;
@@ -37,14 +37,22 @@ function convertToCSV(events) {
     const timestamp = new Date(parseInt(event.timestamp)).toISOString();
     const cost = (event.requestsCosts || 0) / 100;
 
+    // Calculate total tokens
+    const inputTokens = tokenUsage?.inputTokens || 0;
+    const outputTokens = tokenUsage?.outputTokens || 0;
+    const cacheReadTokens = tokenUsage?.cacheReadTokens || 0;
+    const cacheWriteTokens = tokenUsage?.cacheWriteTokens || 0;
+    const totalTokens = inputTokens + outputTokens + cacheReadTokens + cacheWriteTokens;
+
     return [
       timestamp,
       modelIntent,
       cost,
-      tokenUsage?.inputTokens || 0,
-      tokenUsage?.outputTokens || 0,
-      tokenUsage?.cacheReadTokens || 0,
-      tokenUsage?.cacheWriteTokens || 0
+      inputTokens,
+      outputTokens,
+      cacheReadTokens,
+      cacheWriteTokens,
+      totalTokens
     ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(',');
   });
 

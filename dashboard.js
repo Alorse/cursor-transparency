@@ -79,18 +79,18 @@ async function fetchAndDisplayData(forceRefresh = false) {
  * Filters and displays the data based on the current settings.
  */
 function displayData() {
-  if (!state.allUsageData || !state.allUsageData.usageEventsDisplay) {
+  if (!state.allUsageData || !state.userAnalyticsData.usageEventsDisplay) {
     showErrorState('No usage data available');
     return;
   }
-  const filteredEvents = filterEvents(state.allUsageData.usageEventsDisplay).filter(isValidEvent);
+  const filteredEvents = filterEvents(state.userAnalyticsData.usageEventsDisplay).filter(isValidEvent);
   const stats = calculateStats(filteredEvents);
   
   updateOverviewPanel(stats);
   updateTimeline(filteredEvents);
   updateModelBreakdown(state.allUsageData);
   updateAnalyticsTable(filteredEvents);
-  updateModelFilter(state.allUsageData.usageEventsDisplay);
+  updateModelFilter(state.userAnalyticsData.usageEventsDisplay);
   updateResultsInfo(filteredEvents.length);
 }
 

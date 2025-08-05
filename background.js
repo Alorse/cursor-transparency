@@ -92,7 +92,8 @@ async function fetchUsageData() {
  * @returns {Promise<Object>} Analytics data response
  */
 async function fetchUserAnalytics({ teamId = 0, userId = 0, startDate, endDate }) {
-  return fetchFromCursorApi('/dashboard/get-user-analytics', { teamId, userId, startDate, endDate });
+  const events = await fetchFromCursorApi('/dashboard/get-filtered-usage-events', { teamId, userId, startDate, endDate });
+  return events;
 }
 
 /**
