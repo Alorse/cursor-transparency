@@ -197,10 +197,8 @@ function calculateStats(events) {
       if (isUsageBased) {
         console.log('isUsageBased', event);
         subStats.totalBasedCents += cost;
-        stats.totalBasedCents += cost;
       } else {
         subStats.totalCents += cost;
-        stats.totalCents += cost;
       }
       
       subStats.totalInputTokens += tokenUsage.inputTokens || 0;
