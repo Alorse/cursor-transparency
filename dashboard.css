@@ -384,9 +384,14 @@ section {
 
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
   margin-bottom: 1.5rem;
+}
+
+/* When there are only 2 cards, use 2 equal columns */
+.overview-container.two-cards .kpi-grid {
+  grid-template-columns: 1fr 1fr;
 }
 
 .stat-card {

@@ -91,12 +91,14 @@ export function updateOverviewPanel(stats) {
   
   // Show/hide and update Based Costs card
   if (stats.totalBasedCents > 0) {
-    dom.basedCostCard.style.visibility = 'visible';
-    dom.basedCostCard.style.opacity = '1';
+    dom.basedCostCard.style.display = 'flex';
     dom.totalBasedCost.textContent = `$${(stats.totalBasedCents / 100).toFixed(2)}`;
+    // Remove two-cards class when we have 3 cards
+    dom.overviewPanel.classList.remove('two-cards');
   } else {
-    dom.basedCostCard.style.visibility = 'hidden';
-    dom.basedCostCard.style.opacity = '0';
+    dom.basedCostCard.style.display = 'none';
+    // Add two-cards class when we only have 2 cards
+    dom.overviewPanel.classList.add('two-cards');
   }
 
   // Prepare data for detailed breakdown
