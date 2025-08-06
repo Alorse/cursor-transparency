@@ -91,10 +91,12 @@ export function updateOverviewPanel(stats) {
   
   // Show/hide and update Based Costs card
   if (stats.totalBasedCents > 0) {
-    dom.basedCostCard.style.display = 'block';
+    dom.basedCostCard.style.visibility = 'visible';
+    dom.basedCostCard.style.opacity = '1';
     dom.totalBasedCost.textContent = `$${(stats.totalBasedCents / 100).toFixed(2)}`;
   } else {
-    dom.basedCostCard.style.display = 'none';
+    dom.basedCostCard.style.visibility = 'hidden';
+    dom.basedCostCard.style.opacity = '0';
   }
 
   // Prepare data for detailed breakdown
