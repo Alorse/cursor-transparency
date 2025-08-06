@@ -482,14 +482,9 @@ section {
   color: #a0aec0;
 }
 
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
 
-/* Timeline Section */
+
+/* Sort Controls */
 .timeline-controls {
   display: flex;
   align-items: center;
@@ -503,68 +498,6 @@ section {
   padding: 0.6rem 1rem; /* Ajustar padding */
   border-radius: 6px;
   font-size: 0.875rem;
-}
-
-.timeline-container {
-  max-height: 600px;
-  overflow-y: auto;
-}
-
-.usage-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.timeline-event {
-  background: #1a1a1a; /* Fondo de evento oscuro */
-  border: 1px solid #333333; /* Borde oscuro */
-  border-radius: 8px; /* Ligeramente más redondeado */
-  padding: 1.2rem; /* Aumentar padding */
-  transition: background 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra sutil */
-}
-
-.timeline-event:hover {
-  background: #282828; /* Fondo más oscuro en hover */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada en hover */
-}
-
-.event-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-
-.event-model {
-  font-weight: 600;
-  color: #cccccc; /* Gris claro para nombre del modelo */
-}
-
-.event-time {
-  font-size: 0.875rem;
-  color: #a0aec0;
-}
-
-.event-cost {
-  font-weight: 600;
-  color: #48d1cc; /* Verde azulado claro para el costo */
-}
-
-.event-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 0.75rem;
-  font-size: 0.875rem;
-}
-
-.event-detail {
-  color: #a0aec0;
-}
-
-.event-detail strong {
-  color: #e0e0e0;
 }
 
 /* Models Section */
@@ -591,7 +524,7 @@ section {
 }
 
 .models-container {
-  max-height: 600px;
+  max-height: 400px;
   overflow-y: auto;
 }
 
@@ -622,8 +555,8 @@ section {
 
 .model-stats {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
   font-size: 0.875rem;
 }
 

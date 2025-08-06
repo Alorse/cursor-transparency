@@ -16,7 +16,6 @@ import {
   updateConnectionStatus, 
   updateLastUpdated,
   updateOverviewPanel,
-  updateTimeline,
   updateModelBreakdown,
   updateAnalyticsTable,
   updateModelFilter,
@@ -83,7 +82,6 @@ function displayData() {
   const stats = calculateStats(filteredEvents);
   
   updateOverviewPanel(stats);
-  updateTimeline(filteredEvents);
   updateModelBreakdown(filteredEvents);
   updateAnalyticsTable(filteredEvents);
   updateModelFilter(filteredEvents);
@@ -195,7 +193,6 @@ function calculateStats(events) {
       const cost = tokenUsage.totalCents || 0;
       
       if (isUsageBased) {
-        console.log('isUsageBased', event);
         subStats.totalBasedCents += cost;
       } else {
         subStats.totalCents += cost;

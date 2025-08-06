@@ -117,59 +117,40 @@
         </div>
       </section>
 
-      <!-- Dashboard Grid -->
-      <div class="dashboard-grid">
-        <!-- Usage Timeline -->
-        <section class="timeline-section">
-          <div class="section-header">
-            <h2 class="section-title">Recent Usage Events</h2>
-            <div class="timeline-controls">
-              <select id="sortOrder" class="sort-select">
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="cost-high">Highest Cost</option>
-                <option value="cost-low">Lowest Cost</option>
-              </select>
-            </div>
+      <!-- Model Usage -->
+      <section class="models-section">
+        <div class="section-header">
+          <h2 class="section-title">Model Usage</h2>
+          <div class="timeline-controls">
+            <select id="modelBreakdownSort" class="sort-select">
+              <option value="cost">By Cost</option>
+              <option value="requests">By Requests</option>
+            </select>
           </div>
-          
-          <div class="timeline-container">
-            <div class="usage-timeline" id="usageTimeline">
-              <!-- Timeline events will be populated here -->
-            </div>
+        </div>
+        
+        <div class="models-container">
+          <div class="model-breakdown" id="modelBreakdown">
+            <!-- Model breakdown will be populated here -->
           </div>
-        </section>
-
-        <!-- Model Breakdown -->
-        <section class="models-section">
-          <div class="section-header">
-            <h2 class="section-title">Model Usage</h2>
-            <div class="timeline-controls">
-              <select id="modelBreakdownSort" class="sort-select">
-                <option value="cost">By Cost</option>
-                <option value="requests">By Requests</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="models-container">
-            <div class="model-breakdown" id="modelBreakdown">
-              <!-- Model breakdown will be populated here -->
-            </div>
-          </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
       <!-- Detailed Analytics -->
       <section class="analytics-section">
         <div class="section-header">
           <h2 class="section-title">Detailed Analytics</h2>
           <div class="timeline-controls">
+            <select id="sortOrder" class="sort-select">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="cost-high">Highest Cost</option>
+              <option value="cost-low">Lowest Cost</option>
+            </select>
             <select id="modelFilter" class="sort-select">
               <option value="all">All Models</option>
             </select>
           </div>
-
         </div>
         
         <div class="analytics-table-container">

@@ -39,8 +39,7 @@ export function initDOM() {
     totalRequests: 'totalRequests',
     detailedBreakdownPanel: 'detailedBreakdownPanel',
 
-    // Timeline
-    usageTimeline: 'usageTimeline',
+    // Sort controls
     sortOrder: 'sortOrder',
     
     // Models

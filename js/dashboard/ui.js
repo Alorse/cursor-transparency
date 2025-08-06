@@ -168,67 +168,7 @@ export function updateOverviewPanel(stats) {
     </div>`;
 }
 
-/**
- * Renders the timeline of usage events.
- * @param {Array<object>} events - The events to display.
- */
-export function updateTimeline(events) {
-  if (events.length === 0) {
-    dom.usageTimeline.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">📊</div>
-        <p>No usage events found for the selected time period</p>
-      </div>`;
-    return;
-  }
 
-  const sortedEvents = [...events].sort((a, b) => {
-    switch (state.currentSort) {
-      case 'newest': return parseInt(b.timestamp) - parseInt(a.timestamp);
-      case 'oldest': return parseInt(a.timestamp) - parseInt(b.timestamp);
-      case 'cost-high': return (b.tokenUsage.totalCents || 0) - (a.tokenUsage.totalCents || 0);
-      case 'cost-low': return (a.tokenUsage.totalCents || 0) - (b.tokenUsage.totalCents || 0);
-      default: return parseInt(b.timestamp) - parseInt(a.timestamp);
-    }
-  });
-
-  const displayEvents = sortedEvents.slice(0, constants.TIMELINE_EVENT_LIMIT);
-
-  dom.usageTimeline.innerHTML = displayEvents.map(event => {
-    const tokenUsage = event?.tokenUsage || {};
-    let modelIntent = event?.model || 'Unknown Model';
-    if (modelIntent === 'default') modelIntent = 'Auto';
-    const timestamp = new Date(parseInt(event.timestamp));
-    const cost = event.tokenUsage.totalCents || 0;
-    const isErrored = event?.status === 'errored';
-    if (isErrored) modelIntent += ' [Errored, Not Charged]';
-    const isApiKey = false;
-
-    return `
-      <div class="timeline-event${isErrored ? ' errored-bg' : ''}">
-        <div class="event-header">
-          <span class="event-model">${modelIntent}</span>
-          <span class="event-time">${formatTimestamp(timestamp)}</span>
-          <span class="event-cost">${isApiKey ? '-' : `$${(cost / 100).toFixed(3)}`}</span>
-        </div>
-        ${tokenUsage ? `
-          <div class="event-details">
-            <div class="event-detail"><strong>${isApiKey ? '-' : formatNumber(tokenUsage.inputTokens || 0)}</strong> input tokens</div>
-            <div class="event-detail"><strong>${isApiKey ? '-' : formatNumber(tokenUsage.outputTokens || 0)}</strong> output tokens</div>
-            <div class="event-detail"><strong>${isApiKey ? '-' : formatNumber(tokenUsage.cacheReadTokens || 0)}</strong> cache read</div>
-            <div class="event-detail"><strong>${isApiKey ? '-' : formatNumber(tokenUsage.cacheWriteTokens || 0)}</strong> cache write</div>
-          </div>
-        ` : '<div class="event-details"><div class="event-detail">No token data available</div></div>'}
-      </div>`;
-  }).join('');
-
-  if (sortedEvents.length > constants.TIMELINE_EVENT_LIMIT) {
-    dom.usageTimeline.innerHTML += `
-      <div class="timeline-event" style="text-align: center; opacity: 0.7;">
-        <p>Showing first ${constants.TIMELINE_EVENT_LIMIT} of ${sortedEvents.length} events</p>
-      </div>`;
-  }
-}
 
 /**
  * Renders the model usage breakdown.
@@ -374,8 +314,16 @@ export function updateAnalyticsTable(events) {
         return modelIntent === state.selectedModel;
     });
 
-  // Sort by timestamp (newest first)
-  const sortedEvents = [...modelFilteredEvents].sort((a, b) => parseInt(b.timestamp) - parseInt(a.timestamp));
+  // Sort by the selected sort order
+  const sortedEvents = [...modelFilteredEvents].sort((a, b) => {
+    switch (state.currentSort) {
+      case 'newest': return parseInt(b.timestamp) - parseInt(a.timestamp);
+      case 'oldest': return parseInt(a.timestamp) - parseInt(b.timestamp);
+      case 'cost-high': return (b.tokenUsage?.totalCents || 0) - (a.tokenUsage?.totalCents || 0);
+      case 'cost-low': return (a.tokenUsage?.totalCents || 0) - (b.tokenUsage?.totalCents || 0);
+      default: return parseInt(b.timestamp) - parseInt(a.timestamp);
+    }
+  });
   const totalPages = Math.ceil(sortedEvents.length / constants.ANALYTICS_PAGE_SIZE);
   if (state.analyticsCurrentPage > totalPages) state.analyticsCurrentPage = totalPages || 1;
 
@@ -447,29 +395,30 @@ function updatePaginationControls(totalItems, currentPage, totalPages) {
       <button id="nextPageBtn" class="pagination-btn" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
     </div>`;
 
-  // Set up pagination handlers only once
-  if (!dom.paginationContainer._hasListeners) {
-    dom.paginationContainer._hasListeners = true;
-    dom.paginationContainer.addEventListener('click', (e) => {
-      const target = e.target;
-      
-      if (target.id === 'prevPageBtn' && !target.disabled) {
-        if (state.analyticsCurrentPage > 1) {
-          state.analyticsCurrentPage--;
-          if (window.displayData) {
-            window.displayData();
-          }
-        }
-      } else if (target.id === 'nextPageBtn' && !target.disabled) {
-        if (state.analyticsCurrentPage < totalPages) {
-          state.analyticsCurrentPage++;
-          if (window.displayData) {
-            window.displayData();
-          }
+  // Use event delegation on the container to avoid multiple listeners
+  dom.paginationContainer.onclick = (e) => {
+    const target = e.target;
+    
+    if (target.id === 'prevPageBtn' && !target.disabled) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (state.analyticsCurrentPage > 1) {
+        state.analyticsCurrentPage--;
+        if (window.displayData) {
+          window.displayData();
         }
       }
-    });
-  }
+    } else if (target.id === 'nextPageBtn' && !target.disabled) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (state.analyticsCurrentPage < totalPages) {
+        state.analyticsCurrentPage++;
+        if (window.displayData) {
+          window.displayData();
+        }
+      }
+    }
+  };
 }
 
 /**
