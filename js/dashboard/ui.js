@@ -445,22 +445,29 @@ function updatePaginationControls(totalItems, currentPage, totalPages) {
       <button id="nextPageBtn" class="pagination-btn" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
     </div>`;
 
-  // These event listeners are re-added here. A more robust solution might use event delegation.
-  document.getElementById('prevPageBtn').addEventListener('click', () => {
-    if (state.analyticsCurrentPage > 1) {
-      state.analyticsCurrentPage--;
-      // This function now needs a way to trigger a re-render.
-      // We'll handle this in the main script.
-    }
-  });
-
-  document.getElementById('nextPageBtn').addEventListener('click', () => {
-    if (state.analyticsCurrentPage < totalPages) {
-      state.analyticsCurrentPage++;
-      // This function now needs a way to trigger a re-render.
-      // We'll handle this in the main script.
-    }
-  });
+  // Set up pagination handlers only once
+  if (!dom.paginationContainer._hasListeners) {
+    dom.paginationContainer._hasListeners = true;
+    dom.paginationContainer.addEventListener('click', (e) => {
+      const target = e.target;
+      
+      if (target.id === 'prevPageBtn' && !target.disabled) {
+        if (state.analyticsCurrentPage > 1) {
+          state.analyticsCurrentPage--;
+          if (window.displayData) {
+            window.displayData();
+          }
+        }
+      } else if (target.id === 'nextPageBtn' && !target.disabled) {
+        if (state.analyticsCurrentPage < totalPages) {
+          state.analyticsCurrentPage++;
+          if (window.displayData) {
+            window.displayData();
+          }
+        }
+      }
+    });
+  }
 }
 
 /**
