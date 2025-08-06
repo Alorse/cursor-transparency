@@ -418,6 +418,7 @@ section {
 }
 
 .cost-card .stat-icon { background-color: #2c5282; }
+.based-cost-card .stat-icon { background-color: #805ad5; }
 .requests-card .stat-icon { background-color: #83693c; }
 
 .stat-content {

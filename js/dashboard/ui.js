@@ -70,6 +70,7 @@ export function updateResultsInfo(count) {
     const filterLabels = {
       today: 'Today',
       yesterday: 'Yesterday',
+      currentMonth: 'Current Month',
       last4hours: 'Last 4 hours',
       last24hours: 'Last 24 hours',
       last7days: 'Last 7 days',
@@ -87,6 +88,14 @@ export function updateOverviewPanel(stats) {
   // Update KPI cards
   dom.totalCost.textContent = `$${(stats.totalCents / 100).toFixed(2)}`;
   dom.totalRequests.textContent = formatNumber(stats.totalRequests);
+  
+  // Show/hide and update Based Costs card
+  if (stats.totalBasedCents > 0) {
+    dom.basedCostCard.style.display = 'block';
+    dom.totalBasedCost.textContent = `$${(stats.totalBasedCents / 100).toFixed(2)}`;
+  } else {
+    dom.basedCostCard.style.display = 'none';
+  }
 
   // Prepare data for detailed breakdown
   const userAnalytics = {
@@ -223,29 +232,32 @@ export function updateTimeline(events) {
  * Renders the model usage breakdown.
  * @param {Array<object>} events - The usage events.
  */
-export function updateModelBreakdown(userAnalyticsData) {
+export function updateModelBreakdown(events) {
   const modelStats = {};
-  console.log('userAnalyticsData', userAnalyticsData);
 
-  if (!userAnalyticsData || !userAnalyticsData.usageEventsDisplay) {
+  if (!events || events.length === 0) {
     dom.modelBreakdown.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">🤖</div>
-        <p>No model usage data available</p>
+        <p>No model usage data available for the selected time period</p>
       </div>`;
     return;
   }
 
-  userAnalyticsData.usageEventsDisplay.forEach(event => {
+  events.forEach(event => {
     const tokenUsage = event?.tokenUsage || {};
     let modelIntent = event?.model || 'Unknown Model';
     if (modelIntent === 'default') modelIntent = 'Auto';
-    const cost = event.tokenUsage.totalCents || 0;
+    
+    // Separate costs based on kind
+    const isUsageBased = event.kind == 'USAGE_EVENT_KIND_USAGE_BASED';
+    const cost = tokenUsage.totalCents || 0;
 
     if (!modelStats[modelIntent]) {
       modelStats[modelIntent] = {
         requests: 0,
         totalCents: 0,
+        totalBasedCents: 0,
         totalInputTokens: 0,
         totalOutputTokens: 0,
         totalCacheReadTokens: 0,
@@ -253,7 +265,12 @@ export function updateModelBreakdown(userAnalyticsData) {
     }
 
     modelStats[modelIntent].requests++;
-    modelStats[modelIntent].totalCents += cost;
+    
+    if (isUsageBased) {
+      modelStats[modelIntent].totalBasedCents += cost;
+    } else {
+      modelStats[modelIntent].totalCents += cost;
+    }
 
     if (tokenUsage) {
       modelStats[modelIntent].totalInputTokens += tokenUsage.inputTokens || 0;
@@ -280,11 +297,16 @@ export function updateModelBreakdown(userAnalyticsData) {
     return;
   }
 
-  dom.modelBreakdown.innerHTML = sortedModels.map(([model, stats]) => `
+  dom.modelBreakdown.innerHTML = sortedModels.map(([model, stats]) => {
+    const costDisplay = stats.totalBasedCents > 0 ? 
+      `$${(stats.totalCents / 100).toFixed(2)} + $${(stats.totalBasedCents / 100).toFixed(2)} (Based)` :
+      `$${(stats.totalCents / 100).toFixed(2)}`;
+    
+    return `
     <div class="model-item">
       <div class="model-header">
         <span class="model-name">${model}</span>
-        <span class="event-cost">$${(stats.totalCents / 100).toFixed(2)}</span>
+        <span class="event-cost">${costDisplay}</span>
       </div>
       <div class="model-stats">
         <div class="model-stat"><strong>${stats.requests}</strong> requests</div>
@@ -292,8 +314,8 @@ export function updateModelBreakdown(userAnalyticsData) {
         <div class="model-stat"><strong>${formatNumber(stats.totalOutputTokens)}</strong> output tokens</div>
         <div class="model-stat"><strong>${formatNumber(stats.totalCacheReadTokens)}</strong> cache read tokens</div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 /**
@@ -364,10 +386,16 @@ export function updateAnalyticsTable(events) {
     if (modelIntent === 'default') modelIntent = 'Auto';
     const subscriptionProductId = event.model;
     const timestamp = new Date(parseInt(event.timestamp));
-    const cost = event.tokenUsage.totalCents || 0;
     const isErrored = event?.status === 'errored';
     if (isErrored) modelIntent += ' [Errored, Not Charged]';
     const isApiKey = subscriptionProductId === 'api-key';
+    
+    // Calculate costs based on kind
+    const isUsageBased = event.kind == 'USAGE_EVENT_KIND_USAGE_BASED';
+    const cost = tokenUsage?.totalCents || 0;
+    const costDisplay = isUsageBased ? 
+      `${(cost / 100).toFixed(3)} (Based)` : 
+      `${(cost / 100).toFixed(3)}`;
     
     // Calculate total tokens
     const inputTokens = tokenUsage?.inputTokens || 0;
@@ -380,7 +408,7 @@ export function updateAnalyticsTable(events) {
       <tr${isErrored ? ' class="errored-bg"' : ''}>
         <td>${timestamp.toLocaleString()}</td>
         <td>${modelIntent}</td>
-        <td>${isApiKey ? '-' : (cost / 100).toFixed(3)}</td>
+        <td>${isApiKey ? '-' : costDisplay}</td>
         <td>${isApiKey ? '-' : formatNumber(inputTokens)}</td>
         <td>${isApiKey ? '-' : formatNumber(outputTokens)}</td>
         <td>${isApiKey ? '-' : formatNumber(cacheReadTokens)}</td>
@@ -470,6 +498,12 @@ function getCurrentDateRange() {
         break;
       case 'last4hours': startTime = endTime - (4 * 60 * 60 * 1000); break;
       case 'last24hours': startTime = endTime - (24 * 60 * 60 * 1000); break;
+      case 'currentMonth':
+        const currentMonthStart = new Date(endTime);
+        currentMonthStart.setDate(1);
+        currentMonthStart.setHours(0, 0, 0, 0);
+        startTime = currentMonthStart.getTime();
+        break;
       case 'last7days': startTime = endTime - (7 * 24 * 60 * 60 * 1000); break;
       case 'all':
       default: startTime = 0; break;

@@ -86,7 +86,9 @@ function handleTimeRangeChange(e) {
   state.currentFilter = e.target.value;
   state.customDateRange = null;
   state.analyticsCurrentPage = 1; // Reset page on filter change
-  if (state.userAnalyticsData) renderData();
+  if (state.userAnalyticsData) {
+    renderData();
+  }
 }
 
 function handleModelFilterChange(e) {

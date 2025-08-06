@@ -29,7 +29,6 @@ async function fetchFromCursorApi(endpoint, body) {
   } catch (tabError) {
     throw new Error("Cursor.com tab is not accessible. Please refresh the tab and try again.");
   }
-  console.log("fetching from cursor api", body);
   const results = await chrome.scripting.executeScript({
     target: { tabId: cursorTab.id },
     func: async (url, body) => {
@@ -101,9 +100,7 @@ chrome.action.onClicked.addListener(async (tab) => {
  * Message handler for communication with dashboard
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log("request", request);
   if (request.action === "fetchUserAnalytics") {
-    console.log("fetching analytics from API", request.params);
     fetchAnalyticsFromAPI(request.params)
       .then((data) => sendResponse({ success: true, data }))
       .catch((error) => sendResponse({ success: false, error: error.message || "Failed to fetch analytics" }));

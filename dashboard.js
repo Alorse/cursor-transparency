@@ -84,9 +84,9 @@ function displayData() {
   
   updateOverviewPanel(stats);
   updateTimeline(filteredEvents);
-  updateModelBreakdown(state.userAnalyticsData);
+  updateModelBreakdown(filteredEvents);
   updateAnalyticsTable(filteredEvents);
-  updateModelFilter(state.userAnalyticsData.usageEventsDisplay);
+  updateModelFilter(filteredEvents);
   updateResultsInfo(filteredEvents.length);
 }
 
@@ -133,6 +133,13 @@ function filterEvents(events) {
         startTime = referenceTime - (24 * 60 * 60 * 1000);
         endTime = referenceTime;
         break;
+      case 'currentMonth':
+        const currentMonthStart = new Date(referenceTime);
+        currentMonthStart.setDate(1);
+        currentMonthStart.setHours(0, 0, 0, 0);
+        startTime = currentMonthStart.getTime();
+        endTime = referenceTime;
+        break;
       case 'last7days':
         startTime = referenceTime - (7 * 24 * 60 * 60 * 1000);
         endTime = referenceTime;
@@ -142,10 +149,12 @@ function filterEvents(events) {
         return events;
     }
   }
-  return events.filter(event => {
+  const filteredEvents = events.filter(event => {
     const eventTime = parseInt(event.timestamp);
     return eventTime >= startTime && eventTime <= endTime;
   });
+  
+  return filteredEvents;
 }
 
 /**
@@ -156,6 +165,7 @@ function filterEvents(events) {
 function calculateStats(events) {
   const stats = {
     totalCents: 0,
+    totalBasedCents: 0, // Nuevo campo para costos basados en uso
     totalInputTokens: 0,
     totalOutputTokens: 0,
     totalCacheReadTokens: 0,
@@ -165,21 +175,34 @@ function calculateStats(events) {
     tokensPerRequest: 0,
     bySubscription: {},
   };
+  console.log('events', events);
 
   events.forEach(event => {
     const subscriptionProductId = event.model || 'unknown';
     if (!stats.bySubscription[subscriptionProductId]) {
       stats.bySubscription[subscriptionProductId] = {
-        totalCents: 0, totalInputTokens: 0, totalOutputTokens: 0,
+        totalCents: 0, totalBasedCents: 0, totalInputTokens: 0, totalOutputTokens: 0,
         totalCacheReadTokens: 0, totalCacheWriteTokens: 0, totalRequests: 0,
       };
     }
     const subStats = stats.bySubscription[subscriptionProductId];
-    subStats.totalCents += event.tokenUsage.totalCents || 0;
     subStats.totalRequests += 1;
     
     const tokenUsage = event?.tokenUsage;
     if (tokenUsage) {
+      // Separar costos basados en el campo kind
+      const isUsageBased = event.kind == 'USAGE_EVENT_KIND_USAGE_BASED';
+      const cost = tokenUsage.totalCents || 0;
+      
+      if (isUsageBased) {
+        console.log('isUsageBased', event);
+        subStats.totalBasedCents += cost;
+        stats.totalBasedCents += cost;
+      } else {
+        subStats.totalCents += cost;
+        stats.totalCents += cost;
+      }
+      
       subStats.totalInputTokens += tokenUsage.inputTokens || 0;
       subStats.totalOutputTokens += tokenUsage.outputTokens || 0;
       subStats.totalCacheReadTokens += tokenUsage.cacheReadTokens || 0;
@@ -189,6 +212,7 @@ function calculateStats(events) {
 
   Object.values(stats.bySubscription).forEach(subStats => {
     stats.totalCents += subStats.totalCents;
+    stats.totalBasedCents += subStats.totalBasedCents;
     stats.totalInputTokens += subStats.totalInputTokens;
     stats.totalOutputTokens += subStats.totalOutputTokens;
     stats.totalCacheReadTokens += subStats.totalCacheReadTokens;

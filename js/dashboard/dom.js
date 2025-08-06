@@ -29,10 +29,13 @@ export function initDOM() {
     lastUpdated: 'lastUpdated',
     resultsCount: 'resultsCount',
     timeRange: 'timeRange',
+    timeRangeDropdown: 'timeRangeDropdown',
     
     // Overview Panel
     overviewPanel: 'overviewPanel',
     totalCost: 'totalCost',
+    totalBasedCost: 'totalBasedCost',
+    basedCostCard: 'basedCostCard',
     totalRequests: 'totalRequests',
     detailedBreakdownPanel: 'detailedBreakdownPanel',
 

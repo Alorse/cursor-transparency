@@ -26,10 +26,11 @@
           </div>
           <select id="timeRangeDropdown" class="time-range-dropdown">
             <option value="all">All Time</option>
-            <option value="today">Today</option>
-            <option value="yesterday">Yesterday</option>
             <option value="last4hours">Last 4 Hours</option>
+            <option value="today">Today</option>
             <option value="last24hours">Last 24 Hours</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="currentMonth">Current Month</option>
             <option value="last7days">Last 7 Days</option>
           </select>
           <button id="refreshBtn" class="refresh-btn">
@@ -91,6 +92,13 @@
               <div class="stat-content">
                 <div class="stat-value" id="totalCost">$0.00</div>
                 <div class="stat-label">Total Cost</div>
+              </div>
+            </div>
+            <div class="stat-card based-cost-card" id="basedCostCard" style="display: none;">
+              <div class="stat-icon">💳</div>
+              <div class="stat-content">
+                <div class="stat-value" id="totalBasedCost">$0.00</div>
+                <div class="stat-label">Based Costs</div>
               </div>
             </div>
             <div class="stat-card requests-card">
